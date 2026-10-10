@@ -56,5 +56,10 @@ export async function createSession(email, password) {
 
 export async function destroySession() {
   const cookieStore = await cookies();
-  cookieStore.delete(COOKIE_NAME);
+  
+
+  cookieStore.delete({
+    name: COOKIE_NAME,
+    path: "/",
+  });
 }
