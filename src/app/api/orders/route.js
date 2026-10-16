@@ -63,7 +63,7 @@ export async function POST(request) {
     );
   }
 
-  const result = createOrderFromInput(
+  const result = await createOrderFromInput(
     validation.data,
     session.id
   );

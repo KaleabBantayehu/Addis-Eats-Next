@@ -1,65 +1,34 @@
-import { cookies } from "next/headers";
-import { createSessionToken, verifySessionToken } from "./session-token";
-import { sessionProfiles } from "./session-profiles";
+import "server-only";
 
-const COOKIE_NAME = "session";
+import { createClient } from "@/lib/supabase/server";
 
-const demoPasswords = {
-  usr_1: "admin123",
-  usr_2: "ermi123",
-  usr_3: "addis@password",
-};
-
-const users = sessionProfiles.map((profile) => ({
-  ...profile,
-  password: demoPasswords[profile.id],
-}));
-
-const profilesById = sessionProfiles.map(({ id, name, email, role }) => ({
-  id,
-  name,
-  email,
-  role,
-}));
+const VALID_ROLES = new Set(["customer", "staff", "admin"]);
 
 export async function getSession() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE_NAME)?.value;
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getClaims();
 
-  if (!token) return null;
+  if (error || !data?.claims?.sub) return null;
 
-  return verifySessionToken(token, profilesById);
-}
+  const claims = data.claims;
+  const userId = claims.sub;
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, name, role")
+    .eq("id", userId)
+    .maybeSingle();
 
-export async function createSession(email, password) {
-  const cookieStore = await cookies();
-  const normalizedEmail = String(email ?? "").trim().toLowerCase();
-  const suppliedPassword = String(password ?? "");
-  const user = users.find(
-    (candidate) =>
-      candidate.email.toLowerCase() === normalizedEmail &&
-      candidate.password === suppliedPassword,
-  );
-  
-  if (!user) return null;
+  if (profileError) {
+    console.error("Could not load the signed-in user's profile:", profileError);
+    return null;
+  }
 
-  cookieStore.set(COOKIE_NAME, createSessionToken(user.id), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7,
-    path: "/",
-  });
+  const role = VALID_ROLES.has(profile?.role) ? profile.role : "customer";
 
-  return { id: user.id, name: user.name, email: user.email, role: user.role };
-}
-
-export async function destroySession() {
-  const cookieStore = await cookies();
-  
-
-  cookieStore.delete({
-    name: COOKIE_NAME,
-    path: "/",
-  });
+  return {
+    id: userId,
+    name: profile?.name || claims.email || "Customer",
+    email: typeof claims.email === "string" ? claims.email : "",
+    role,
+  };
 }

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { handleSignOut } from "./actions/auth";
+import ThemeToggle from "./ThemeToggle";
+import { Heart } from "lucide-react";
 export default function Navbar({ session }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -10,66 +12,83 @@ export default function Navbar({ session }) {
   const closeMenu = () => setIsOpen(false);
 
   return (
-    <header className="fixed top-0 left-0 z-50 w-full border-b border-gray-200 bg-white shadow-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+    <header className="fixed top-0 left-0 z-50 w-full border-b border-border bg-surface/95 shadow-card backdrop-blur-sm">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         {/* Brand Logo */}
         <Link
           href="/"
-          className="text-2xl font-bold text-orange-600"
+          className="rounded-lg text-xl font-extrabold tracking-tight text-primary sm:text-2xl"
           onClick={closeMenu}
         >
           Addis Eats
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden items-center gap-6 font-medium md:flex">
+        <nav className="hidden items-center gap-1 font-medium lg:flex lg:gap-1 xl:gap-2">
           <Link
             href="/"
-            className="text-orange-600 font-bold hover:text-green-600"
+            className="inline-flex min-h-12 items-center rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-muted hover:text-secondary"
           >
             Home
           </Link>
           <Link
             href="/menu"
-            className="text-orange-600 font-bold hover:text-green-600"
+            className="inline-flex min-h-12 items-center rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-muted hover:text-secondary"
           >
             Menu
           </Link>
           <Link
             href="/cart"
-            className="text-orange-600 font-bold hover:text-green-600"
+            className="inline-flex min-h-12 items-center rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-muted hover:text-secondary"
           >
             Cart
           </Link>
+          {session ? (
+            <Link
+              href="/favorites"
+              aria-label="Favorites"
+              title="Favorites"
+              className="inline-flex h-12 w-12 items-center justify-center rounded-lg text-primary transition-colors hover:bg-surface-muted hover:text-secondary"
+            >
+              <Heart aria-hidden="true" className="h-5 w-5" />
+            </Link>
+          ) : null}
               {session ?
               <>
-                <Link href="/checkout" className="text-orange-600 font-bold hover:text-green-600">
+                <Link href="/checkout" className="inline-flex min-h-12 items-center rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-muted hover:text-secondary">
                   Checkout
                 </Link>
 
-                <Link href="/orders" className="text-orange-600 font-bold hover:text-orange-600">
+                <Link href="/orders" className="inline-flex min-h-12 items-center rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-muted hover:text-secondary">
                   Orders
                 </Link>
 
                 {session.role === "staff" && 
-                <Link href="/kitchen" className="text-orange-600 font-bold hover:text-orange-700">
+                <Link href="/kitchen" className="inline-flex min-h-12 items-center rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-muted hover:text-secondary">
                   Kitchen
                 </Link>}
+                
+                {session.role === "admin" && 
+                <Link href="/dashboard" className="inline-flex min-h-12 items-center rounded-lg px-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-muted hover:text-secondary">
+                Dasboard
+                </Link> }
 
                 <form action={handleSignOut}>
                   <button 
                   type="submit"
-                  className="text-orange-600 font-bold transition">
+                  className="app-control px-3 text-sm text-primary font-semibold transition hover:text-secondary">
                     Sign Out
                   </button>
                 </form>
 
               </> : 
-                <Link href="/signin" className="text-orange-600 font-bold hover:text-orange-700">
+                <Link href="/signin" className="app-control inline-flex items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover">
                   Sign In
                 </Link>
               }
         </nav>
+
+        <ThemeToggle />
 
         {/* Hamburger Toggle Button (Mobile Only) */}
         <button
@@ -77,7 +96,7 @@ export default function Navbar({ session }) {
           type="button"
           aria-expanded={isOpen}
           aria-label="Toggle navigation menu"
-          className="rounded-lg p-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 md:hidden"
+          className="flex min-h-12 min-w-12 items-center justify-center rounded-lg p-2 text-foreground-muted hover:bg-surface-muted hover:text-primary-hover focus:outline-none focus:ring-2 focus:ring-secondary lg:hidden"
         >
           <svg
             className="h-6 w-6"
@@ -109,35 +128,45 @@ export default function Navbar({ session }) {
 
       {/* Mobile Dropdown Menu */}
       {isOpen && (
-        <nav className="border-t border-orange-100 bg-white px-6 py-4 shadow-inner md:hidden">
-          <div className="flex flex-col gap-4 font-medium">
+        <nav className="border-t border-border bg-surface px-4 py-4 shadow-inner sm:px-6 lg:hidden">
+          <div className="flex flex-col gap-2 font-medium">
             <Link
               href="/"
               onClick={closeMenu}
-              className="inline-block rounded-lg bg-orange-600 py-2.5 text-center font-semibold text-white transition-colors hover:bg-orange-700"
+              className="app-control inline-flex w-full items-center justify-center rounded-lg bg-surface-muted px-4 py-3 text-center font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               Home
             </Link>
             <Link
               href="/menu"
               onClick={closeMenu}
-              className="inline-block rounded-lg bg-orange-600 py-2.5 text-center font-semibold text-white transition-colors hover:bg-orange-700"
+              className="app-control inline-flex w-full items-center justify-center rounded-lg bg-surface-muted px-4 py-3 text-center font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               Menu
             </Link>
             <Link
               href="/cart"
               onClick={closeMenu}
-              className="inline-block rounded-lg bg-orange-600 py-2.5 text-center font-semibold text-white transition-colors hover:bg-orange-700"
+              className="app-control inline-flex w-full items-center justify-center rounded-lg bg-surface-muted px-4 py-3 text-center font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               Cart
             </Link>
+            {session ? (
+              <Link
+                href="/favorites"
+                onClick={closeMenu}
+                className="app-control inline-flex w-full items-center justify-center gap-2 rounded-lg bg-surface-muted px-4 py-3 text-center font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+              >
+                <Heart aria-hidden="true" className="h-4 w-4" />
+                Favorites
+              </Link>
+            ) : null}
             {session ? 
             <>
             <Link 
                 href="/checkout"               
                 onClick={closeMenu}
-                className="inline-block rounded-lg bg-orange-600 py-2.5 text-center font-semibold text-white transition-colors hover:bg-orange-700"
+                className="app-control inline-flex w-full items-center justify-center rounded-lg bg-surface-muted px-4 py-3 text-center font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
             >
                   Checkout
             </Link>
@@ -145,7 +174,7 @@ export default function Navbar({ session }) {
             <Link 
                 href="/orders" 
                 onClick={closeMenu}
-                className="inline-block rounded-lg bg-orange-600 py-2.5 text-center font-semibold text-white transition-colors hover:bg-orange-700"
+                className="app-control inline-flex w-full items-center justify-center rounded-lg bg-surface-muted px-4 py-3 text-center font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
             >
                   Orders
             </Link>
@@ -153,7 +182,7 @@ export default function Navbar({ session }) {
             <form action={handleSignOut}>
               <button 
                 type="submit"
-                className="inline-block rounded-lg bg-orange-600 py-2.5 text-center font-semibold text-white transition-colors hover:bg-orange-700"
+                className="app-control inline-flex w-full items-center justify-center rounded-lg bg-surface-muted px-4 py-3 text-center font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
                 >
                 Sign Out
               </button>
@@ -163,16 +192,27 @@ export default function Navbar({ session }) {
               <Link 
                   href="/kitchen" 
                   onClick={closeMenu}
-                  className="inline-block rounded-lg bg-orange-600 py-2.5 text-center font-semibold text-white transition-colors hover:bg-orange-700"
+                  className="app-control inline-flex w-full items-center justify-center rounded-lg bg-surface-muted px-4 py-3 text-center font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
               >
                     Kitchen
               </Link>}
+
+              {session.role === "admin" && 
+                <Link 
+                href="/dashboard" 
+                onClick={closeMenu}
+                className="app-control inline-flex w-full items-center justify-center rounded-lg bg-surface-muted px-4 py-3 text-center font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+                >
+                Dasboard
+                </Link> 
+                
+              }
             </>
             : 
               <Link 
                 href="/signin" 
                 onClick={closeMenu}
-                className="inline-block rounded-lg bg-orange-600 py-2.5 text-center font-semibold text-white transition-colors hover:bg-orange-700"
+                className="app-control inline-flex w-full items-center justify-center rounded-lg bg-surface-muted px-4 py-3 text-center font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
             >
                   Sign In
             </Link>}

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 
@@ -14,16 +15,28 @@ export default function OrderStatusClient({ id, initialOrder }) {
     }
   );
 
-  if (error) return <div className="text-red-600">Failed to update order status.</div>;
+  if (error) return <div role="alert" className="page-shell py-12 text-red-700 dark:text-red-300">Failed to update order status.</div>;
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-md border border-gray-100 space-y-4">
-      <h2 className="text-2xl font-bold">Order #{order.id}</h2>
-      <p className="text-gray-700">
-        Status: <span className="font-semibold text-orange-600">{order.status}</span>
-      </p>
-      <p className="text-gray-700">Total: {order.total} ETB</p>
-      <p className="text-xs text-gray-600">Polling updates every 5 seconds...</p>
+    <main className="page-shell max-w-3xl py-10 sm:py-14">
+    <div className="app-card p-6 sm:p-9">
+      <p className="text-sm font-semibold text-secondary">Order status</p>
+      <h1 className="mt-2 text-3xl font-bold">Order #{order.id}</h1>
+      <div className="my-6 grid gap-4 rounded-xl bg-surface-muted p-5 sm:grid-cols-2 lg:grid-cols-3">
+        <p className="text-foreground-muted">Status <span className="mt-1 block font-semibold capitalize text-foreground">{order.status.replaceAll("-", " ")}</span></p>
+        <p className="text-foreground-muted">Total <span className="price-number mt-1 block font-semibold text-foreground">{order.total} ETB</span></p>
+        <p className="text-foreground-muted">Placed <span className="mt-1 block font-semibold text-foreground">{new Date(order.createdAt).toLocaleString("en-ET", { dateStyle: "medium", timeStyle: "short" })}</span></p>
+      </div>
+      <div className="pt-2">
+        <Link
+          href={`/track/${order.id}`}
+          className="flex min-h-12 min-w-12 items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
+        >
+          View Live Delivery Map & Tracking →
+        </Link>
+      </div>
+      <p className="mt-5 text-xs text-foreground-muted">Polling updates every 5 seconds...</p>
     </div>
+    </main>
   );
 }

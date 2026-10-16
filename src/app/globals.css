@@ -1,24 +1,186 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #fff7ed;
-  --foreground:  #111827;
+  color-scheme: light;
+  --background: #f9f9f9;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-muted: #f0f3f2;
+  --surface-warm: #fff1e6;
+  --foreground: #18221f;
+  --foreground-muted: #596763;
+  --primary: #004d40;
+  --primary-hover: #136964;
+  --primary-foreground: #ffffff;
+  --secondary: #136964;
+  --secondary-foreground: #ffffff;
+  --accent: #f09e34;
+  --accent-foreground: #432600;
+  --border: #e2e8e6;
+  --focus: #004d40;
+  --card-shadow: 0 2px 8px -2px rgba(0, 77, 64, 0.05), 0 1px 4px -1px rgba(0, 77, 64, 0.03);
+  --elevated-shadow: 0 10px 24px -4px rgba(0, 77, 64, 0.08), 0 4px 8px -2px rgba(0, 77, 64, 0.04);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #101a18;
+  --surface: #172521;
+  --surface-raised: #1f312c;
+  --surface-muted: #13201d;
+  --surface-warm: #28352e;
+  --foreground: #f4f7f6;
+  --foreground-muted: #d1dbd8;
+  --primary: #004d40;
+  --primary-hover: #136964;
+  --primary-foreground: #ffffff;
+  --secondary: #54b3ac;
+  --secondary-foreground: #102a26;
+  --accent: #f09e34;
+  --accent-foreground: #432600;
+  --border: #263d37;
+  --focus: #89d4cd;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.22);
+  --elevated-shadow: 0 20px 40px -8px rgba(0, 30, 25, 0.36);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-warm: var(--surface-warm);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --shadow-card: var(--card-shadow);
+  --shadow-elevated: var(--elevated-shadow);
+  --font-sans: var(--font-manrope), Manrope, sans-serif;
+  --radius-control: 0.5rem;
+  --radius-card: 1rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  min-height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-color: var(--secondary) var(--background);
+}
+
+:where(h1, h2) {
+  font-weight: 700;
+}
+
+:where(h3, label) {
+  font-weight: 600;
+}
+
+:where(p) {
+  font-weight: 400;
 }
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-manrope), Manrope, sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--secondary) 24%, transparent);
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+:where(button, [role="button"], a) {
+  touch-action: manipulation;
+}
+
+.app-card {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface-raised);
+  box-shadow: var(--card-shadow);
+}
+
+.page-shell {
+  width: min(100% - 2rem, 80rem);
+  margin-inline: auto;
+}
+
+@media (min-width: 640px) {
+  .page-shell {
+    width: min(100% - 3rem, 80rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .page-shell {
+    width: min(100% - 4rem, 80rem);
+  }
+}
+
+.price-number {
+  font-variant-numeric: tabular-nums;
+}
+
+::placeholder {
+  color: var(--foreground-muted);
+  opacity: 0.78;
+}
+
+.app-control {
+  min-height: 3rem;
+  border-radius: 0.5rem;
+}
+
+.dark .bg-primary.text-white,
+.dark .bg-primary-hover.text-white {
+  color: var(--primary-foreground);
+}
+
+.dark .text-primary {
+  color: #94d3c1;
+}
+
+.dark .hover\:text-primary-hover:hover {
+  color: #89d4cd;
+}
+
+.dark .border-primary {
+  border-color: #54b3ac;
+}
+
+.app-card:hover {
+  box-shadow: var(--elevated-shadow);
+}
+
+:where(.rounded-xl.border.bg-surface, .rounded-xl.bg-surface.shadow-card, .rounded-2xl.border.bg-surface, .rounded-2xl.bg-surface.shadow-card) {
+  border-color: var(--border);
+  border-radius: 1rem;
+  background-color: var(--surface-raised);
+  box-shadow: var(--card-shadow);
+}
+
+:where(input, select, textarea) {
+  background-color: var(--surface);
+}
+
+body {
+  font-weight: 400;
+  line-height: 1.5;
 }

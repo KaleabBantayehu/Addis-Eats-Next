@@ -1,6 +1,7 @@
 import "./globals.css";
-import { inter } from "./ui/fonts";
+import { manrope } from "./ui/fonts";
 import Navbar from "./Navbar";
+import MobileNavigation from "./MobileNavigation";
 import { getSession } from "@/lib/session";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -39,6 +40,7 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
+  const session = await getSession();
   const restaurantJsonLd = {
     "@context": "https://schema.org",
     "@type": "Restaurant",
@@ -55,11 +57,11 @@ export default async function RootLayout({ children }) {
     currenciesAccepted: "ETB",
     paymentAccepted: "Cash, Telebirr",
   };
-  const session = await getSession();
+
   return (
     <html lang="en">
       <body
-        className={`${inter.className} antialiased bg-orange-50 text-gray-900`}
+        className={`${manrope.variable} antialiased bg-background text-foreground`}
       >
         <script
           type="application/ld+json"
@@ -69,18 +71,19 @@ export default async function RootLayout({ children }) {
         />
         <div className="flex min-h-screen flex-col">
           {/* Client-side Navbar Component */}
-          <Navbar session={session}/>
+          <Navbar session={session} />
 
           {/* pt-20 prevents page content from hiding behind fixed header */}
-          <div className="flex-1 bg-[#fdfbf7] pt-20">
+          <div className="flex-1 bg-background pt-20 pb-20 lg:pb-0">
             {children}
           </div>
 
-          <footer className="mt-auto border-t border-orange-100 bg-white">
-            <div className="mx-auto max-w-7xl px-6 py-6 text-center text-sm text-gray-700">
+          <footer className="mt-auto border-t border-border bg-surface-warm">
+            <div className="mx-auto max-w-7xl px-6 py-6 text-center text-sm text-foreground-muted">
               © 2026 Addis Eats. Ethiopian food delivered with care.
             </div>
           </footer>
+          <MobileNavigation session={session} />
         </div>
       </body>
     </html>

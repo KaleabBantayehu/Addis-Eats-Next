@@ -1,65 +1,31 @@
 # Addis Eats Authentication and Authorization
 
-## Session
+## Identity and session flow
 
-Sign-in verifies one of the local demo accounts in `src/lib/session.js`. It issues
-a seven-day `session` cookie containing an HMAC-SHA-256-signed, base64url token.
-The signed claims contain only a user ID and expiry; role, name, and email are
-resolved from the server-owned profiles in `src/lib/session-profiles.js`.
-Invalid, expired, edited, and unknown-user tokens are rejected.
+- Supabase Auth owns passwords, access tokens, refresh tokens, and sign-out.
+- `src/app/actions/auth.js` performs sign-in with `signInWithPassword`, account creation with `signUp`, and local-session sign-out with `signOut({ scope: "local" })`.
+- `src/lib/session.js` calls `auth.getClaims()` to verify the token, then reads only the caller's `profiles` row to obtain the app name and role. The role is never read from user-editable metadata.
+- `src/lib/supabase/proxy.js` uses the `@supabase/ssr` cookie adapter and `auth.getClaims()` to refresh tokens. `src/proxy.js` applies that refresh flow across app requests and redirects signed-out users away from protected pages.
+- Route pages, Server Actions, and Route Handlers still check identity, ownership, and role themselves. Proxy is a session refresh and early redirect layer, not the only authorization boundary.
 
-The cookie uses `HttpOnly`, `SameSite=Lax`, `Path=/`, and `Secure` in production.
-Set a unique random `SESSION_SECRET` of at least 32 characters in every deployed
-environment. Production startup intentionally fails closed if it is absent.
-The local development fallback secret is not safe for deployment.
+## Roles
 
-The demo passwords are test fixtures, stored as plain text in source. Do not
-reuse them or this demo credential store in a real service.
+Sign-ups must receive the database default `customer` role. Do not accept a role from a form or `user_metadata`. Assign `staff` and `admin` only through a trusted database/admin operation. The migration at `supabase/migrations/202610160001_auth_profile_security.sql` restricts profile reads to the row owner and prevents users from changing `role` through the Data API.
 
-## Route and action checks
+The app expects `public.profiles` to use `id` referencing `auth.users(id)`, and to contain `name`, `phone`, and `role` columns. A new-user trigger should populate the profile and let the database default role apply. If your existing column or policy names differ, adapt the SQL migration before running it.
 
-| Route / operation | First check | Server-side check | What the check proves |
-|---|---|---|---|
-| `/menu` and `/menu/[id]` | None | Public menu data | Menu and dishes remain public and indexable. |
-| `/cart` | None | Cart is local browser storage | No customer order data is exposed by the cart page. |
-| `/checkout` | `src/proxy.js` verifies the signed cookie | `src/app/checkout/page.js` calls `getSession()` | A valid signed-in session exists before the form renders. |
-| `placeOrder` | Server Action validates session | `src/app/actions.js` binds owner ID from the verified session | An unsigned/guest request cannot create an order or select its owner. |
-| `POST /api/orders` | API verifies session | Validates input and binds owner ID from the session | Direct HTTP order writes require a valid account. |
-| `/orders` | Proxy verifies signed cookie | Page queries `getOrdersByOwner(session.id)` | Each customer sees only orders belonging to their session. |
-| `/orders/[id]` | Proxy verifies signed cookie | Page compares order owner to `session.id` | Guessing another customer's order ID returns not found. |
-| `GET /api/orders/[id]` | API verifies signed cookie | Owner check; returns only status/total/timestamps | Polling cannot expose another customer's order details. |
-| `cancelOrder` | Action verifies signed-in session | Checks order ownership and refuses delivered/cancelled orders | A forged form cannot cancel another account's or a closed order. |
-| `/kitchen` | Proxy verifies signed cookie and staff role | Page independently checks the role | A customer cannot load the staff dashboard. |
-| `updateOrderStatusAction` | Action independently verifies staff role | Checks order and enforces the next legal status transition | Calling the action directly cannot bypass the kitchen UI or role check. |
-| `/signin`, `/signout` | Public entry pages | Sign-in sanitizes `next`; sign-out clears the cookie server-side | External redirects are rejected and sign-out invalidates the session. |
+## Environment
 
-## Required attack checks
+Set `NEXT_PUBLIC_SUPABASE_URL` to the project origin (for example, `https://<project-ref>.supabase.co`, without `/rest/v1`) and set `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local`. The publishable/anon key can be exposed to the browser only because RLS controls table access. Never add a Supabase service-role/secret key to a `NEXT_PUBLIC_` variable or client code.
 
-Run these against the production build with the browser's Network/Application
-panels or the commands in `README.md`; check status codes and redirects rather
-than only the rendered UI.
+## Authorization checkpoints
 
-1. **Unauthenticated write:** `POST /api/orders` without a cookie returns `401`.
-   `placeOrder` independently returns an error when submitted without a session.
-2. **Cross-account order lookup/cancellation:** place an order as account one,
-   sign out, sign in as account two, then open `/orders/<first-order-id>` and
-   `GET /api/orders/<first-order-id>`. The page returns not found and the API
-   returns `404`; the cancellation action checks the same owner ID before it
-   changes anything.
-3. **Forged identity/role:** edit the `session` cookie to a JSON object or alter
-   a valid token's payload to claim another ID or `staff`. The proxy and server
-   reject the unsigned/tampered cookie; `/kitchen` never grants access.
-4. **Open redirect:** `/signin?next=https://example.com` and
-   `/signin?next=%2F%5C%5Cexample.com` fall back to `/`; sign-in never redirects
-   off-site.
+| Surface | Server-side check |
+|---|---|
+| `/checkout`, `/orders`, `/favorites` | Verified Supabase claims; pages and actions re-check with `getSession()` |
+| `/dashboard` | `getSession()` and `session.role === "admin"` |
+| `/kitchen` | `getSession()` and `session.role === "staff"` |
+| Order details, APIs, and tracking | Verified identity and order ownership; staff/admin access only where explicitly allowed |
+| `placeOrder`, cancellation, status updates, favorites actions | Each action re-checks identity, owner, role, and/or valid status transition at mutation time |
 
-The unit tests in `tests/session-token.test.mjs` cover valid signatures,
-tampering, expiry, malformed input, and unknown identities. Run `npm test`.
-
-## Important persistence limitation
-
-`src/lib/orders.js` uses a process-local in-memory store. It is suitable for a
-single local production server and this classroom exercise, but orders disappear
-on restart and do not reliably persist across serverless functions, replicas,
-or deployment previews. A public deployment needs a persistent database before
-its order workflow can be considered production-ready.
+Use `auth.uid()` in Supabase RLS policies for database ownership checks. The server client carries the signed-in Supabase Auth cookie, so Postgres receives the authenticated JWT. The old custom `session` HMAC cookie and fixture profiles are no longer used.

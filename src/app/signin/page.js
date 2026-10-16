@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
-import { createSession, getSession } from "@/lib/session";
+import Image from "next/image";
+import Link from "next/link";
+import { getSession } from "@/lib/session";
+import { signIn } from "@/app/actions/auth";
 
 export const metadata = {
   title: "Sign In",
@@ -32,40 +35,45 @@ export default async function SignInPage({ searchParams }) {
     redirect(target);
   }
 
-  async function handleSignIn(formData) {
-    "use server";
-
-    const email = formData.get("email");
-    const password = formData.get("password");
-
-    const userSession = await createSession(email, password);
-
-    if (userSession) {
-      redirect(target);
-    }
-
-    redirect(`/signin?error=invalid&next=${encodeURIComponent(target)}`);
-  }
-
   return (
-    <main className="mx-auto max-w-md p-6">
-      <h1 className="mb-6 text-2xl font-bold">Sign In Addis Eats</h1>
+    <main className="page-shell grid min-h-[calc(100svh-10rem)] items-center gap-8 py-8 sm:py-12 lg:grid-cols-[1fr_0.9fr] lg:gap-14">
+      <section className="relative hidden min-h-[34rem] overflow-hidden rounded-2xl bg-surface-warm shadow-card lg:block" aria-hidden="true">
+        <Image src="/images/hero.png" alt="" fill sizes="(max-width: 1023px) 0px, 50vw" className="object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+      </section>
+      <div className="app-card mx-auto w-full max-w-xl p-6 sm:p-8 lg:p-10">
+      <h1 className="mb-2 text-3xl font-bold tracking-tight">Sign In Addis Eats</h1>
+      <p className="mb-6 text-sm leading-6 text-foreground-muted">Log in to your account to manage your orders.</p>
 
       {resolvedSearchParams?.error === "invalid" && (
-        <p role="alert" className="mb-4 rounded bg-red-50 p-3 text-red-800">
+        <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
           The email or password is incorrect. Please try again.
         </p>
       )}
 
-      <form action={handleSignIn} className="flex flex-col gap-4">
+      {resolvedSearchParams?.registered === "1" && (
+        <p role="status" className="mb-4 rounded-lg border border-secondary/30 bg-surface-muted p-3 text-foreground">
+          Account created. Check your email for a confirmation link, then sign in.
+        </p>
+      )}
+
+      {resolvedSearchParams?.error === "confirmation" && (
+        <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+          That confirmation link is invalid or expired. Try creating your account again or request a new link.
+        </p>
+      )}
+
+      <form action={signIn} className="flex flex-col gap-4">
+        <input type="hidden" name="next" value={target} />
         <div>
           <label htmlFor="email" className="block text-md font-medium">Email</label>
           <input
             id="email"
             type="email"
             name="email"
+            autoComplete="email"
             required
-            className="w-full rounded border p-2 mt-1"
+            className="mt-1 min-h-12 w-full rounded-lg border border-border bg-surface px-3.5 py-3 text-base text-foreground transition-colors placeholder:text-foreground-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-secondary"
             placeholder="user@example.com"
           />
         </div>
@@ -76,28 +84,27 @@ export default async function SignInPage({ searchParams }) {
             id="password"
             type="password"
             name="password"
+            autoComplete="current-password"
             required
-            className="w-full rounded border p-2 mt-1"
+            className="mt-1 min-h-12 w-full rounded-lg border border-border bg-surface px-3.5 py-3 text-base text-foreground transition-colors placeholder:text-foreground-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-secondary"
             placeholder="password"
           />
         </div>
 
         <button
           type="submit"
-          className="rounded bg-orange-600 px-4 py-2 font-bold text-white hover:bg-orange-700"
+          className="app-control mt-2 flex w-full items-center justify-center rounded-lg bg-primary px-4 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
         >
           Sign In
         </button>
       </form>
 
-      <div className="p-5 m-6 bg-orange-200">
-        <h3 className="text-white-400 font-bold">username & passwords</h3>
-        <h4 className="text-white-400 font-bold">admin</h4>
-        <p>addiseats@admin.com</p><span>admin123</span>
-        <h4 className="text-white-400 font-bold">staff</h4>
-        <p>addisEats@gmail.com</p><span>addis@password</span>
-        <h4 className="text-white-400 font-bold">customer</h4>
-        <p>ermiyasDereje@gmail.com</p><span>ermi123</span>
+      <p className="mt-6 text-center text-sm text-foreground-muted">
+        New to Addis Eats?{" "}
+        <Link href={`/signup?next=${encodeURIComponent(target)}`} className="font-semibold text-secondary underline underline-offset-4">
+          Create an account
+        </Link>
+      </p>
       </div>
     </main>
   );

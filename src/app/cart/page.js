@@ -11,12 +11,12 @@ export const metadata = {
 export default function CartPage() {
   return (
     <CartProvider>
-      <main className="mx-auto max-w-5xl px-6 py-12">
-        <h1 className="mb-3 text-4xl font-bold text-gray-900">
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+        <h1 className="mb-3 text-4xl font-bold text-foreground">
           Your Cart
         </h1>
 
-        <p className="mb-8 text-gray-600">
+        <p className="mb-8 text-foreground-muted">
           Review your selected dishes before checkout.
         </p>
 

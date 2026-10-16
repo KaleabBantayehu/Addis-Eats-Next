@@ -84,7 +84,7 @@ export async function placeOrder(
     };
   }
 
-  const result = createOrderFromInput(
+  const result = await createOrderFromInput(
     validation.data,
     session.id
   );

@@ -19,7 +19,7 @@
 | `src/app/kitchen/page.js` | Server | Verifies the staff role and renders current order data. |
 | `src/app/actions.js` | Server Actions | Re-checks authentication, ownership, staff role, and status transitions at mutation time. |
 | `src/app/api/**/route.js` | Route Handlers | Server-side validation, signed-session checks, owner scoping, and cache headers. |
-| `src/lib/session.js`, `session-token.js`, `session-profiles.js` | Server | Cookie access, HMAC verification, and trusted user-role lookup. |
+| `src/lib/session.js`, `src/lib/supabase/server.js`, `src/lib/supabase/proxy.js` | Server / Proxy | Supabase Auth claims verification, profile role lookup, and refresh-cookie propagation. |
 | `src/lib/orders.js`, `order-service.js`, `schema.js` | Server | Demo persistence, server-authoritative prices, and shared validation. |
 
 The client search receives server-rendered fallback data as a serializable prop.

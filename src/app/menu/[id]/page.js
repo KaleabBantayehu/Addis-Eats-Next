@@ -1,11 +1,15 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
-import { dishes } from "../dishes";
+import { getDishById } from "../getDishes";
 import { CheckCircle2 }  from "lucide-react";
+import { getSession } from "@/lib/session";
+import { getFavoriteIdsForUser } from "@/lib/favorites";
+import { FavoriteButton } from "../DishCard";
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
-  const dish = dishes.find((item) => String(item.id) === id);
+  const dish = await getDishById(id);
   if (!dish) return { title: "Dish not found" };
 
   const description = `${dish.name} ${dish.price} ETB. ${dish.description}`;
@@ -21,7 +25,7 @@ export async function generateMetadata({ params }) {
         url: `/menu/${id}/opengraph-image`,
         width: 1200,
         height: 630,
-        alt: `${dish.name} — ${dish.price} ETB`,
+        alt: `${dish.name} â€” ${dish.price} ETB`,
       }],
     },
     twitter: {
@@ -33,22 +37,17 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export function generateStaticParams() {
-  return dishes.map((dish) => ({
-    id: String(dish.id),
-  }));
-}
+
 
 export default async function DishDetailPage({ params }) {
   const { id } = await params;
 
-  // 1. Fetch/Find the dish FIRST
-  const dish = dishes.find((item) => String(item.id) === id);
-  const ingredients = dish.ingredients;
+  const dish = await getDishById(id);
+  if (!dish) notFound();
 
-  if (!dish) {
-    notFound();
-  }
+  const session = await getSession();
+  const favoriteIds = session ? getFavoriteIdsForUser(session.id) : [];
+  const ingredients = dish.ingredients;
 
   // 2. Define JSON-LD AFTER dish is guaranteed to exist
   const jsonLd = {
@@ -66,7 +65,7 @@ export default async function DishDetailPage({ params }) {
 
   // 3. Return JSX with the <script> inside <main>
   return (
-    <main>
+    <main className="page-shell py-6 sm:py-9">
       {/* Structured Data for Search Engines */}
       <script
         type="application/ld+json"
@@ -77,26 +76,53 @@ export default async function DishDetailPage({ params }) {
 
       <Link
         href="/menu"
-        className="mb-6 inline-block text-slate-900 hover:underline"
+        className="mb-5 inline-flex min-h-12 items-center rounded-lg px-3 py-2 font-semibold text-secondary transition-colors hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
       >
-        ← Back to Menu
+        â† Back to Menu
       </Link>
 
-      <article className="rounded-xl border border-orange-100 bg-white p-8 shadow-sm">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-orange-600">
-          {dish.category}
-        </p>
+      <article className="grid items-start gap-5 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-surface-muted shadow-card lg:aspect-[1.05/1]">
+            <Image
+              src={dish.image}
+              alt={dish.name}
+              fill
+              preload
+              loading="eager"
+              fetchPriority="high"
+              sizes="(max-width: 1024px) 100vw, 52vw"
+              className="object-cover"
+            />
+            {session ? (
+              <FavoriteButton
+                dishId={dish.id}
+                dishName={dish.name}
+                isFavorite={favoriteIds.includes(String(dish.id))}
+              />
+            ) : null}
+          </div>
 
-        <h1 className="mb-4 text-4xl font-bold">{dish.name}</h1>
+          <div className="app-card p-5 sm:p-8 lg:sticky lg:top-24 lg:p-9">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-secondary">
+              {dish.category}
+            </p>
 
-        <p className="mb-6 text-[#121c2a]">{dish.description}</p>
+            <h1 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">{dish.name}</h1>
 
-        <p className="text-2xl font-bold text-orange-600">{dish.price} ETB</p>
+            <p className="mb-6 leading-7 text-foreground-muted">{dish.description}</p>
 
-        <ul className="m-5 p-5 max-w-md">
-          {ingredients.map((ingredient) => (<li key={ingredient} className="odd:bg-orange-100 text-red-900 font-semibold text-center flex items-center gap-10"><CheckCircle2 className="w-5 h-5 text-emeraled-500 shrink-0 "/> <span>{ingredient}</span> </li> ))}
+            <p className="mb-7 text-3xl font-bold text-primary"><span className="price-number">{dish.price}</span> <span className="text-base font-semibold">ETB</span></p>
 
-        </ul>
+            <h2 className="mb-3 text-lg font-semibold text-foreground">Ingredients</h2>
+            <ul className="grid gap-2 sm:grid-cols-2">
+              {ingredients.map((ingredient) => (
+                <li key={ingredient} className="flex items-center gap-2 rounded-lg bg-surface-muted px-3 py-2.5 text-sm font-medium text-foreground">
+                  <CheckCircle2 className="h-5 w-5 shrink-0 text-secondary" />
+                  <span>{ingredient}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
       </article>
     </main>
   );

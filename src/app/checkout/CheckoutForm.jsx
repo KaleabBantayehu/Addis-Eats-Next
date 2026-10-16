@@ -83,8 +83,10 @@ export default function CheckoutForm() {
         <input
           id="name"
           name="name"
+          type="text"
+          autoComplete="name"
           required
-          className="w-full rounded-lg border border-gray-300 p-3"
+          className="min-h-12 w-full rounded-lg border border-border bg-surface px-3.5 py-3 text-base text-foreground transition-colors focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary"
         />
 
         {state.fieldErrors?.name && (
@@ -99,14 +101,18 @@ export default function CheckoutForm() {
           htmlFor="phone"
           className="mb-2 block font-medium"
         >
-          Phone
+          Phone (TeleBirr / Ethiopian Mobile)
         </label>
 
         <input
           id="phone"
           name="phone"
+          type="tel"
+          inputMode="numeric"
+          autoComplete="tel"
+          placeholder="0911223344 or +251911223344"
           required
-          className="w-full rounded-lg border border-gray-300 p-3"
+          className="min-h-12 w-full rounded-lg border border-border bg-surface px-3.5 py-3 text-base text-foreground transition-colors focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary"
         />
 
         {state.fieldErrors?.phone && (
@@ -127,8 +133,11 @@ export default function CheckoutForm() {
         <input
           id="area"
           name="area"
+          type="text"
+          autoComplete="address-level2"
+          placeholder="e.g. Bole, Kazanchis, Megenagna, Piassa, CMC"
           required
-          className="w-full rounded-lg border border-gray-300 p-3"
+          className="min-h-12 w-full rounded-lg border border-border bg-surface px-3.5 py-3 text-base text-foreground transition-colors focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary"
         />
 
         {state.fieldErrors?.area && (
@@ -143,14 +152,15 @@ export default function CheckoutForm() {
           htmlFor="notes"
           className="mb-2 block font-medium"
         >
-          Notes
+          Delivery Notes
         </label>
 
         <textarea
           id="notes"
           name="notes"
           rows="4"
-          className="w-full rounded-lg border border-gray-300 p-3"
+          placeholder="e.g. Near Edna Mall, 2nd floor"
+          className="min-h-28 w-full rounded-lg border border-border bg-surface px-3.5 py-3 text-base text-foreground transition-colors focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary"
         />
 
         {state.fieldErrors?.notes && (
@@ -173,7 +183,7 @@ export default function CheckoutForm() {
           !ready ||
           items.length === 0
         }
-        className="rounded-lg bg-orange-600 px-6 py-3 font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex min-h-12 min-w-12 items-center justify-center rounded-lg bg-primary px-6 py-3 font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isPending
           ? "Placing Order..."
@@ -195,7 +205,7 @@ export default function CheckoutForm() {
 
       {state.success &&
         state.orderId && (
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-foreground-muted">
             Order ID: {state.orderId}
           </p>
         )}

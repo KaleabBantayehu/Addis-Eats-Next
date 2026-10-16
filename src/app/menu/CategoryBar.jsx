@@ -3,7 +3,7 @@ import Link from "next/link";
 export function FilterShell({ categories, selectedCategory, children }) {
   return (
     <div>
-      <nav aria-label="Menu categories" className="mb-4 flex flex-wrap gap-3 md:mb-8">
+      <nav aria-label="Menu categories" className="mb-5 flex gap-2 overflow-x-auto pb-2 md:mb-8 md:flex-wrap md:overflow-visible">
         {categories.map((category) => {
           const href =
             category === "All"
@@ -15,10 +15,10 @@ export function FilterShell({ categories, selectedCategory, children }) {
               key={category}
               href={href}
               aria-current={category === selectedCategory ? "page" : undefined}
-              className={`rounded-full px-5 py-2 font-medium transition-colors ${
+              className={`flex min-h-12 shrink-0 items-center justify-center rounded-full px-5 py-2 text-sm font-semibold capitalize transition-colors focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 ${
                 category === selectedCategory
-                  ? "bg-orange-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-orange-100"
+                  ? "bg-primary text-white"
+                  : "bg-surface-muted text-foreground-muted hover:bg-surface"
               }`}
             >
               {category}

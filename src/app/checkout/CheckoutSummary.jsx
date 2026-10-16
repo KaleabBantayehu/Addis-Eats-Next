@@ -15,7 +15,7 @@ export default function CheckoutSummary() {
 
   if (!ready) {
     return (
-      <p className="text-gray-600">
+      <p className="text-foreground-muted">
         Preparing your order...
       </p>
     );
@@ -23,18 +23,18 @@ export default function CheckoutSummary() {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-xl bg-orange-50 p-6 text-center">
+      <div className="rounded-xl bg-surface-muted p-6 text-center">
         <h2 className="mb-3 text-xl font-bold">
           No dishes to check out
         </h2>
 
-        <p className="mb-5 text-gray-600">
+        <p className="mb-5 text-foreground-muted">
           Your cart is currently empty.
         </p>
 
         <Link
           href="/menu"
-          className="inline-block rounded-lg bg-orange-600 px-5 py-3 text-white"
+          className="inline-block rounded-lg bg-primary px-5 py-3 text-white"
         >
           Browse the Menu
         </Link>
@@ -44,22 +44,22 @@ export default function CheckoutSummary() {
 
   return (
     <section>
-      <h2 className="mb-5 text-2xl font-bold">
+      <h2 className="mb-5 text-xl font-bold">
         Order Summary
       </h2>
 
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-border">
         {items.map((item) => (
           <div
             key={item.id}
-            className="flex justify-between gap-4 py-4"
+          className="flex justify-between gap-4 border-b border-border py-4 last:border-0"
           >
             <div>
               <h3 className="font-semibold">
                 {item.name}
               </h3>
 
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-foreground-muted">
                 Quantity: {item.quantity}
               </p>
             </div>
@@ -71,22 +71,22 @@ export default function CheckoutSummary() {
         ))}
       </div>
 
-      <div className="mt-6 flex justify-between border-t border-gray-200 pt-5 text-xl font-bold">
+      <div className="mt-6 flex justify-between border-t border-border pt-5 text-xl font-bold">
         <span>Total</span>
 
-        <span className="text-orange-600">
+        <span className="price-number text-primary">
           {total} ETB
         </span>
       </div>
 
-      <p className="mt-6 text-sm text-gray-700">
+      <p className="mt-6 text-sm text-foreground-muted">
         This is an order preview. Payment and order
         submission are not implemented yet.
       </p>
 
       <Link
         href="/cart"
-        className="mt-6 inline-block rounded-lg border border-orange-600 px-5 py-3 text-slate-900 hover:bg-orange-50"
+        className="app-control mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-lg border border-secondary px-5 font-semibold text-secondary hover:bg-surface-muted"
       >
         Edit Your Cart
       </Link>

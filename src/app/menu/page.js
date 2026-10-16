@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { getDishes } from "./getDishes";
 import DishList from "./DishList";
 import { FilterShell } from "./CategoryBar";
 import SearchBox from "./SearchBox";
 import MenuCartActions from "./MenuCartActions";
+import { getSession } from "@/lib/session";
+import { getFavoriteIdsForUser } from "@/lib/favorites";
 
 export const metadata = {
   title: "Menu",
@@ -21,6 +24,8 @@ export const revalidate = 60;
 export default async function MenuPage({ searchParams }) {
   const params = await searchParams;
   const dishes = await getDishes();
+  const session = await getSession();
+  const favoriteIds = session ? getFavoriteIdsForUser(session.id) : [];
   const dishCategories = [...new Set(dishes.map((dish) => dish.category))];
   const categories = ["All", ...dishCategories];
   const searchTerm = (params?.search || "").trim();
@@ -75,27 +80,49 @@ export default async function MenuPage({ searchParams }) {
   };
 
   return (
-    <main className="p-6">
+    <main className="grid min-w-0 gap-6 py-1 md:grid-cols-[200px_minmax(0,1fr)] md:gap-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(menuJsonLd).replace(/</g, "\\u003c"),
         }}
       />
-      <h1 className="mb-3 text-4xl font-bold text-gray-900">Our Menu</h1>
-      <p className="mb-8 text-gray-700">
+      <aside className="app-card sticky top-24 hidden h-fit p-4 md:block">
+        <h2 className="mb-4 px-3 text-lg font-bold tracking-tight text-foreground">Categories</h2>
+        <nav aria-label="Menu categories" className="flex flex-col gap-1">
+          {categories.map((category) => {
+            const href = category === "All" ? "/menu" : `/menu?category=${encodeURIComponent(category)}`;
+            const selected = category === selectedCategory;
+            return <Link key={category} href={href} aria-current={selected ? "page" : undefined} className={`flex min-h-12 items-center rounded-lg px-3 py-2 text-sm font-semibold capitalize transition-colors ${selected ? "bg-primary text-primary-foreground" : "text-foreground-muted hover:bg-surface-muted hover:text-foreground"}`}>{category === "All" ? "All Dishes" : category}</Link>;
+          })}
+        </nav>
+      </aside>
+      <div className="min-w-0">
+      <header className="mb-6 border-b border-border pb-6 sm:mb-8 sm:pb-8">
+        <h1 className="mb-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Our Menu</h1>
+        <p className="max-w-2xl text-sm leading-6 text-foreground-muted sm:text-base">
         Discover delicious Ethiopian dishes.
-      </p>
+        </p>
+      </header>
 
-      <section className="mb-4 min-h-[50px] md:mb-10">
+      <section className="mb-6 min-h-[50px] md:mb-8" aria-label="Search dishes">
         <SearchBox
           initialValue={searchTerm}
           initialPage={page}
           initialData={initialSearchData}
+          favoriteIds={favoriteIds}
+          showFavorite={Boolean(session)}
         />
       </section>
 
-      <hr className="my-4 border-gray-200 md:my-8" />
+      {!session ? (
+        <p className="mb-6 text-sm text-foreground-muted">
+          <Link href="/signin?next=%2Ffavorites" className="font-semibold text-secondary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary">
+            Sign in
+          </Link>{" "}
+          to save dishes to your favorites.
+        </p>
+      ) : null}
 
       <MenuCartActions>
         <FilterShell categories={categories} selectedCategory={selectedCategory}>
@@ -111,12 +138,15 @@ export default async function MenuPage({ searchParams }) {
                   category={category}
                   dishes={categoryDishes}
                   prioritizeFirstImage={index === 0}
+                  favoriteIds={favoriteIds}
+                  showFavorite={Boolean(session)}
                 />
               );
             })
           )}
         </FilterShell>
       </MenuCartActions>
+      </div>
     </main>
   );
 }

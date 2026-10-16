@@ -1,10 +1,11 @@
-import { dishes } from "../app/menu/dishes";
+import { getDishes } from "../app/menu/getDishes";
 import { createOrder } from "./orders";
 
-export function createOrderFromInput(
+export async function createOrderFromInput(
   input,
   ownerId
 ) {
+  const dishes = await getDishes();
   const lineItems = [];
 
   for (const requestedItem of input.items) {

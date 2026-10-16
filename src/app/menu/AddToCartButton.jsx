@@ -14,7 +14,7 @@ export default function AddToCartButton({
       type="button"
       disabled={!ready || disabled}
       onClick={() => addItem(dish)}
-      className="rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex min-h-12 min-w-12 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
     >
       Add to Cart
     </button>
