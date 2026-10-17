@@ -3,9 +3,8 @@ import { manrope } from "./ui/fonts";
 import Navbar from "./Navbar";
 import MobileNavigation from "./MobileNavigation";
 import { getSession } from "@/lib/session";
-import { getSiteUrl } from "@/lib/site-url";
 
-const siteUrl = getSiteUrl();
+const siteUrl = "https://addis-eats-next-psi.vercel.app";
 const defaultFoodImage = "/images/hero.png";
 
 export const metadata = {
@@ -15,7 +14,7 @@ export const metadata = {
   },
   description:
     "Order authentic Ethiopian dishes, freshly prepared and delivered across Addis Ababa.",
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL("https://addis-eats-next-psi.vercel.app"),
   openGraph: {
     title: "Addis Eats",
     description:

@@ -7,23 +7,30 @@ import MenuCartActions from "./MenuCartActions";
 import { getSession } from "@/lib/session";
 import { getFavoriteIdsForUser } from "@/lib/favorites";
 
+const socialImage =
+  "https://addis-eats-next-psi.vercel.app/images/hero.png";
+const menuDescription =
+  "Browse authentic Ethiopian dishes, kitfo, tibs, pizzas, and drinks prepared fresh and delivered across Addis Ababa.";
+
 export const metadata = {
-  title: "Menu",
-  description:
-      "Browse our full menu of authentic Ethiopian dishes, kitfo, tibs, pizzas, and combos available for fast delivery in Addis Ababa.",
+  title: "Addis Eats Menu - Authentic Ethiopian Food Delivery",
+  description: menuDescription,
   openGraph: {
-      title: "Addis Eats Menu",
-      description:
-        "Browse our full menu of authentic Ethiopian dishes, kitfo, tibs, pizzas, and combos.",
-      type: "website",
-      images: ["/images/hero.png"],
+    title: "Addis Eats Menu - Authentic Ethiopian Food Delivery",
+    description: menuDescription,
+    type: "website",
+    images: [
+      {
+        url: socialImage,
+        alt: "Addis Eats menu - Ethiopian food delivery",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Addis Eats Menu",
-    description:
-      "Browse our full menu of authentic Ethiopian dishes, kitfo, tibs, pizzas, and combos.",
-    images: ["/images/hero.png"],
+    title: "Addis Eats Menu - Authentic Ethiopian Food Delivery",
+    description: menuDescription,
+    images: [socialImage],
   },
 };
 

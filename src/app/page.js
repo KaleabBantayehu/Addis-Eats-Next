@@ -5,6 +5,33 @@ import { getDishes } from "./menu/getDishes";
 import DishCard from "./menu/DishCard";
 import MenuCartActions from "./menu/MenuCartActions";
 
+const socialImage =
+  "https://addis-eats-next-psi.vercel.app/images/hero.png";
+const homeDescription =
+  "Order authentic Ethiopian dishes, freshly prepared and delivered across Addis Ababa.";
+
+export const metadata = {
+  title: "Addis Eats - Authentic Ethiopian Food Delivery",
+  description: homeDescription,
+  openGraph: {
+    title: "Addis Eats - Authentic Ethiopian Food Delivery",
+    description: homeDescription,
+    type: "website",
+    images: [
+      {
+        url: socialImage,
+        alt: "Addis Eats - Authentic Ethiopian food delivery",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Addis Eats - Authentic Ethiopian Food Delivery",
+    description: homeDescription,
+    images: [socialImage],
+  },
+};
+
 export default async function HomePage() {
   const dishes = await getDishes();
   const categories = [...new Set(dishes.map((dish) => dish.category))];
