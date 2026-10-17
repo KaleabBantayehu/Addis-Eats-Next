@@ -5,7 +5,7 @@ import MobileNavigation from "./MobileNavigation";
 import { getSession } from "@/lib/session";
 
 const siteUrl = "https://addis-eats-next-psi.vercel.app";
-const defaultFoodImage = "/images/hero.png";
+const defaultFoodImage = `${siteUrl}/images/hero.png`;
 
 export const metadata = {
   title: {
@@ -25,7 +25,10 @@ export const metadata = {
     images: [
       {
         url: defaultFoodImage,
-        alt: "Addis Eats Ethiopian food delivery",
+        width: 1200,
+        height: 630,
+        alt: "Addis Eats - Authentic Ethiopian Food Delivery",
+        type: "image/png",
       },
     ],
   },
@@ -44,7 +47,7 @@ export default async function RootLayout({ children }) {
     "@context": "https://schema.org",
     "@type": "Restaurant",
     name: "Addis Eats",
-    image: new URL(defaultFoodImage, siteUrl).toString(),
+    image: defaultFoodImage,
     url: siteUrl,
     priceRange: "$$",
     servesCuisine: ["Ethiopian", "International"],

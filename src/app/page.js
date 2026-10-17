@@ -20,7 +20,10 @@ export const metadata = {
     images: [
       {
         url: socialImage,
-        alt: "Addis Eats - Authentic Ethiopian food delivery",
+        width: 1200,
+        height: 630,
+        alt: "Addis Eats - Authentic Ethiopian Food Delivery",
+        type: "image/png",
       },
     ],
   },
