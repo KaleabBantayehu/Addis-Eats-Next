@@ -1,6 +1,8 @@
+import { getSiteUrl } from "@/lib/site-url";
+
 // app/robots.js
 export default function robots() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const baseUrl = getSiteUrl();
 
   return {
     rules: {

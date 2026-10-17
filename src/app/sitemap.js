@@ -1,12 +1,12 @@
 import { getDishes } from "./menu/getDishes";
-
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+import { getSiteUrl } from "@/lib/site-url";
 
 export default async function sitemap() {
+  const baseUrl = getSiteUrl();
   const dishes = await getDishes();
 
   const dishEntries = dishes.map((dish) => ({
-    url: `${BASE_URL}/menu/${dish.id}`,
+    url: `${baseUrl}/menu/${dish.id}`,
     lastModified: new Date(),
     changeFrequency: "weekly",
     priority: 0.7,
@@ -14,13 +14,13 @@ export default async function sitemap() {
 
   return [
     {
-      url: BASE_URL,
+      url: baseUrl,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1.0,
     },
     {
-      url: `${BASE_URL}/menu`,
+      url: `${baseUrl}/menu`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.8,

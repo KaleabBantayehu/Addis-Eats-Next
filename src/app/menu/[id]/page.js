@@ -14,18 +14,24 @@ export async function generateMetadata({ params }) {
   if (!dish) return { title: "Dish not found" };
 
   const description = `${dish.name} ${dish.price} ETB. ${dish.description}`;
+  const siteUrl = getSiteUrl();
+  const pageUrl = new URL(`/menu/${dish.id}`, siteUrl).toString();
   const imageUrl = dish.image_url;
 
   return {
     title: dish.name,
     description,
+    alternates: {
+      canonical: pageUrl,
+    },
     openGraph: {
       title: dish.name,
       description,
       type: "website",
+      url: pageUrl,
       ...(imageUrl && {
         images: [{
-          url: new URL(imageUrl, getSiteUrl()).toString(),
+          url: new URL(imageUrl, siteUrl).toString(),
           alt: `${dish.name} - ${dish.price} ETB`,
         }],
       }),
@@ -35,7 +41,7 @@ export async function generateMetadata({ params }) {
       title: dish.name,
       description,
       ...(imageUrl && {
-        images: [new URL(imageUrl, getSiteUrl()).toString()],
+        images: [new URL(imageUrl, siteUrl).toString()],
       }),
     },
   };
