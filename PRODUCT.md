@@ -22,9 +22,8 @@ Addis Eats lets customers browse Ethiopian and other menu dishes, manage a cart,
 
 - The application includes a menu, dish details, cart, checkout, sign-in, order history, staff kitchen views, dashboard, and delivery tracking.
 - The dish catalog and demo user accounts are local fixtures.
-- Orders use a process-local in-memory store; no database or ORM is present.
-- Favorites must be scoped to the signed-in account and follow the existing server-side authentication model.
-- The current in-memory data approach is not durable across restarts or multiple server instances.
+- Favorites and orders are stored in Supabase and scoped to the signed-in account with Row Level Security.
+- Checkout accepts dish IDs and quantities only; the server and database resolve available dish prices before persisting order totals and line-item snapshots.
 
 ## Brand Commitments
 
@@ -41,7 +40,7 @@ Addis Eats lets customers browse Ethiopian and other menu dishes, manage a cart,
 
 - Keep customer data scoped to the authenticated account on the server.
 - Keep browsing, cart, ordering, and tracking workflows intact when adding features.
-- Describe the limits of demo credentials and process-local storage accurately.
+- Describe the limits of demo credentials and database persistence accurately.
 
 ## Accessibility & Inclusion
 

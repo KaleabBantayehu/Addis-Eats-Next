@@ -28,11 +28,11 @@ The following features were evaluated and deliberately cut to maintain architect
 
 ## 2. Deferred Capabilities & Future Architectural Enhancements
 
-### 1. Persistent Database Layer (PostgreSQL + Prisma / Drizzle)
-- **Current State**: Uses an in-memory process-local store (`src/lib/orders.js`).
-- **Deferred Feature**: Replace memory storage with a managed relational database (e.g., Supabase / Neon PostgreSQL) using Prisma ORM or Drizzle.
-- **Rationale for Cutting**: Adding a database during the final sprint introduces migration risks, connection pooling overhead in serverless environments, and credentials management that distracts from verifying client accessibility, security refutations, and frontend performance.
-- **Target Milestone**: v1.1.0
+### 1. Additional Database Capabilities
+- **Current State**: Favorites and orders persist in Supabase; order pricing is validated against the database catalog.
+- **Deferred Feature**: Add payment processing and operational reporting on top of the persistent order model.
+- **Rationale for Cutting**: Payment gateways require merchant credentials, TLS webhook callbacks, and sandbox testing keys that cannot be safely exposed in a demo classroom deployment.
+- **Target Milestone**: v1.2.0
 
 ### 2. Live Payment Gateway Integration (TeleBirr & Chapa)
 - **Current State**: Orders are placed with simulated TeleBirr mobile numbers.

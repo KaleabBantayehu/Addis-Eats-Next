@@ -22,7 +22,7 @@ export default async function TrackOrderPage({ params }) {
     redirect(`/signin?next=${encodeURIComponent(`/track/${id}`)}`);
   }
 
-  const order = getOrderById(id);
+  const order = await getOrderById(id);
 
   if (!order || (order.ownerId !== session.id && session.role !== "staff" && session.role !== "admin")) {
     notFound();

@@ -24,7 +24,7 @@ export default async function OrderPage({ params }) {
     redirect(`/signin?next=${encodeURIComponent(`/orders/${id}`)}`);
   }
 
-  const order = getOrderById(id);
+  const order = await getOrderById(id);
 
   if (!order || order.ownerId !== session.id) {
     notFound();

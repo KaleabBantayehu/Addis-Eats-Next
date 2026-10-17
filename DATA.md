@@ -13,8 +13,8 @@ This document details every data source, rendering boundary, cache policy, and s
 | **Live Menu Search** | Client SWR Query | `/api/dishes?search=${debounced}&page=${page}` (disabled when empty) | Seeded with server `initialData`; debounced by 300ms; `keepPreviousData: true`; 60s deduping. | Minimizes keystroke network spam while maintaining seamless list transitions without layout flash. |
 | **Search Pagination** | Client SWR Query | Same API key with page counter | 6 items per page; previous page retained during page navigation. | Prevents empty flicker during page changes. |
 | **Client Shopping Cart** | Client External Store | `localStorage` (`addis_eats_cart`) | Subscribed via custom store; synchronized across browser tabs via `window.addEventListener("storage")`. | Cart is private to user's device and requires zero server round-trips until checkout. |
-| **Customer Orders (`/orders`)** | Server Component | `getOrdersByOwner(session.id)` | Server-rendered on demand (`force-dynamic`); never trusts query parameters. | Enforces strict data isolation: customers only receive orders linked to their signed session. |
-| **Favorites (`/favorites`, menu, dish detail)** | Server Component + Server Action | `getFavoriteIdsForUser(session.id)` and `setFavoriteAction(dishId, isFavorite)` in `src/lib/favorites.js` | Reads and writes are scoped from the verified server session. The in-memory user-keyed store survives refreshes within one running process. | Uses the app's existing process-local storage approach; no database or competing auth system is introduced. |
+| **Customer Orders (`/orders`)** | Server Component | `getOrdersByOwner(session.id)` | Server-rendered on demand (`force-dynamic`); rows are scoped to the verified user and protected by RLS. | Orders and line-item snapshots persist in Supabase; totals and prices are resolved from the available dish catalog inside the `place_order` database function. |
+| **Favorites (`/favorites`, menu, dish detail)** | Server Component + Server Action | `getFavoriteIdsForUser(session.id)` and `setFavoriteAction(dishId, isFavorite)` in `src/lib/favorites.js` | Reads and writes use the verified Supabase Auth session and `auth.uid()`-scoped RLS policies. | Favorites persist in the Supabase `favorites` table and are isolated by account. |
 | **Order Details (`/orders/[id]`)** | Hybrid Server + Client | `getOrderById(id)` seeded into `OrderStatusClient` | Server seeds `initialOrder`; client SWR polls `/api/orders/${id}` every 5s (`refreshInterval: 5000`). | Immediate initial paint without spinner; live status updates during food prep. |
 | **Live Map & SSE Tracking (`/track/[id]`)** | Hybrid Server + Client SSE | `/api/orders/[id]/stream` via `EventSource` | Server pre-seeds courier/delivery coordinates; client consumes live SSE stream updates. `useEffect` closes connection on unmount or `delivered` status. | Unidirectional real-time courier telemetry without WebSocket connection overhead or polling churn. |
 | **Kitchen Dashboard (`/kitchen`)** | Server Component | `getAllOrders()` from `src/lib/orders.js` | Server-rendered on demand (`force-dynamic`); role restricted to `staff`. | Kitchen staff immediately see latest incoming orders with server-validated state transitions. |
@@ -39,9 +39,9 @@ This document details every data source, rendering boundary, cache policy, and s
 - **Caching**: `Cache-Control: public, s-maxage=60, stale-while-revalidate=120`
 
 ### `POST /api/orders`
-- **Authentication**: Required (`session` cookie)
+- **Authentication**: Required (verified Supabase Auth session)
 - **Body**: `{ items: [{ id, quantity }], area, phone, notes }`
-- **Security Logic**: Item prices are resolved strictly from the authoritative server catalog (`src/lib/dishes.js`), ignoring any prices supplied in client payloads. The order `ownerId` is stamped directly from `session.id`.
+- **Security Logic**: Client payloads contain no trusted prices. The server validates dish availability and the `place_order` database function resolves each current price from `public.dishes`, calculates line totals and the order total, then atomically inserts the order and its line items. The function assigns `user_id` from `auth.uid()`.
 - **Response**: `{ success: true, orderId: "1", total: 420 }`
 
 ### `GET /api/orders/[id]`

@@ -16,7 +16,7 @@ export default async function OrdersPage() {
   const session = await getSession();
   if (!session) redirect("/signin?next=/orders");
   // Always scope to session.id, NEVER an ID from request params
-  const orders = getOrdersByOwner(session.id);
+  const orders = await getOrdersByOwner(session.id);
 
   return (
     <main className="page-shell py-8 sm:py-10">

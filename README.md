@@ -52,9 +52,9 @@ Defined in `.env.example`:
 
 Keep these values in the project-root `.env.local`; it is ignored by Git. Never expose a Supabase service-role/secret key in browser code or a `NEXT_PUBLIC_` variable.
 
-## Favorites
+## Favorites and Orders
 
-Signed-in users can save dishes from menu cards, search results, and dish detail pages, then manage them at `/favorites`. The list is scoped to the authenticated account and survives page refreshes while the server process remains running. This classroom app has no database: favorites use the same process-local storage pattern as orders and are lost on restart or when a request reaches another server instance. Use a shared persistent database before deploying favorites across multiple instances.
+Signed-in users can save dishes from menu cards, search results, and dish detail pages, then manage them at `/favorites`. Favorites and orders are stored in Supabase and scoped to the authenticated account by Row Level Security. Apply the migrations in `supabase/migrations/` to the matching project schema before using these features. Checkout sends only dish IDs and quantities; the server and `place_order` database function resolve prices from the available dishes catalog and persist order items and totals.
 
 ---
 

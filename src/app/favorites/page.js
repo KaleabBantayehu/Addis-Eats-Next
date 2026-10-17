@@ -23,7 +23,7 @@ export default async function FavoritesPage() {
   }
 
   const [favoriteIds, dishes] = await Promise.all([
-    Promise.resolve(getFavoriteIdsForUser(session.id)),
+    getFavoriteIdsForUser(session.id),
     getDishes(),
   ]);
   const favoriteDishes = favoriteIds
@@ -71,4 +71,3 @@ export default async function FavoritesPage() {
     </main>
   );
 }
-

@@ -13,7 +13,7 @@ export default async function KitchenPage() {
   const session = await getSession();
   // Role checked server-side
   if (!session || session.role !== "staff") redirect("/");
-  const orders = getAllOrders();
+  const orders = await getAllOrders();
 
   return (
     <main className="page-shell py-8 sm:py-10">

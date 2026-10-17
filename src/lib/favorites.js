@@ -1,37 +1,51 @@
 import "server-only";
 
-const store = globalThis;
+import { createClient } from "@/lib/supabase/server";
 
-if (!store.__addisEatsFavorites) {
-  store.__addisEatsFavorites = new Map();
-}
-
-const favoritesByUser = store.__addisEatsFavorites;
-
-export function getFavoriteIdsForUser(userId) {
+export async function getFavoriteIdsForUser(userId) {
   if (typeof userId !== "string" || !userId) return [];
 
-  return [...(favoritesByUser.get(userId) ?? new Set())];
-}
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("favorites")
+    .select("dish_id")
+    .eq("user_id", userId);
 
-export function setFavoriteForUser(userId, dishId, isFavorite) {
-  if (typeof userId !== "string" || !userId) return false;
-
-  let favoriteIds = favoritesByUser.get(userId);
-
-  if (isFavorite) {
-    if (!favoriteIds) {
-      favoriteIds = new Set();
-      favoritesByUser.set(userId, favoriteIds);
-    }
-
-    favoriteIds.add(dishId);
-    return true;
+  if (error) {
+    console.error("Could not load the user's favorite dishes:", error);
+    throw new Error("Your favorites are temporarily unavailable.");
   }
 
-  if (!favoriteIds) return true;
+  return (data ?? []).map(({ dish_id: dishId }) => String(dishId));
+}
 
-  favoriteIds.delete(dishId);
-  if (favoriteIds.size === 0) favoritesByUser.delete(userId);
-  return true;
+export async function setFavoriteForUser(userId, dishId, isFavorite) {
+  const supabase = await createClient();
+
+  if (isFavorite) {
+    const { error } = await supabase
+      .from("favorites")
+      .upsert(
+        { user_id: userId, dish_id: Number(dishId) },
+        { onConflict: "user_id,dish_id", ignoreDuplicates: true },
+      );
+
+    if (error) {
+      console.error("Could not save the user's favorite dish:", error);
+      throw new Error("This dish could not be saved to your favorites.");
+    }
+
+    return;
+  }
+
+  const { error } = await supabase
+    .from("favorites")
+    .delete()
+    .eq("user_id", userId)
+    .eq("dish_id", Number(dishId));
+
+  if (error) {
+    console.error("Could not remove the user's favorite dish:", error);
+    throw new Error("This dish could not be removed from your favorites.");
+  }
 }

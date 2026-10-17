@@ -14,7 +14,7 @@ export async function GET(_request, { params }) {
   }
 
   const { id } = await params;
-  const order = getOrderById(id);
+  const order = await getOrderById(id);
 
   if (!order || order.ownerId !== session.id) {
     return Response.json(

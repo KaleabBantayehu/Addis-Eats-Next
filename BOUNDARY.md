@@ -20,9 +20,8 @@
 | `src/app/actions.js` | Server Actions | Re-checks authentication, ownership, staff role, and status transitions at mutation time. |
 | `src/app/api/**/route.js` | Route Handlers | Server-side validation, signed-session checks, owner scoping, and cache headers. |
 | `src/lib/session.js`, `src/lib/supabase/server.js`, `src/lib/supabase/proxy.js` | Server / Proxy | Supabase Auth claims verification, profile role lookup, and refresh-cookie propagation. |
-| `src/lib/orders.js`, `order-service.js`, `schema.js` | Server | Demo persistence, server-authoritative prices, and shared validation. |
+| `src/lib/orders.js`, `order-service.js`, `schema.js` | Server | Supabase order persistence, server-authoritative catalog prices, and shared validation. |
 
 The client search receives server-rendered fallback data as a serializable prop.
 Neither the browser nor request parameters choose an order's owner. The cart is
-browser-local; the order store is process-local and is not durable in a serverless
-deployment.
+browser-local; favorites and orders persist in Supabase with account-scoped RLS.

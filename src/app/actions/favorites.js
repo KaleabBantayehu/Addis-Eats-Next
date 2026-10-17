@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { setFavoriteForUser } from "@/lib/favorites";
 import { getSession } from "@/lib/session";
-import { getDishById } from "@/app/menu/getDishes";
 
 export async function setFavoriteAction(rawDishId, isFavorite) {
   const session = await getSession();
@@ -16,14 +15,12 @@ export async function setFavoriteAction(rawDishId, isFavorite) {
     return { ok: false, code: "INVALID_REQUEST" };
   }
 
-  const dishId = String(rawDishId ?? "");
-  const dish = await getDishById(dishId);
-
-  if (!dish) {
-    return { ok: false, code: "DISH_NOT_FOUND" };
+  const dishId = Number(rawDishId);
+  if (!Number.isSafeInteger(dishId) || dishId < 1) {
+    return { ok: false, code: "INVALID_REQUEST" };
   }
 
-  setFavoriteForUser(session.id, dishId, isFavorite);
+  await setFavoriteForUser(session.id, dishId, isFavorite);
   revalidatePath("/favorites");
   revalidatePath("/menu");
   revalidatePath(`/menu/${dishId}`);

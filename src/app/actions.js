@@ -137,7 +137,7 @@ export async function cancelOrder(
     };
   }
 
-  const order = getOrderById(orderId);
+  const order = await getOrderById(orderId);
 
   if (!order || order.ownerId !== session.id) {
     return {
@@ -156,7 +156,14 @@ export async function cancelOrder(
     };
   }
 
-  markOrderCancelled(order.id);
+  const cancelled = await markOrderCancelled(order.id);
+  if (!cancelled) {
+    return {
+      success: false,
+      code: "ORDER_CLOSED",
+      message: "This order can no longer be cancelled.",
+    };
+  }
 
   revalidatePath("/orders");
 
@@ -185,7 +192,7 @@ export async function updateOrderStatusAction(formData) {
     preparing: ["out-for-delivery"],
     "out-for-delivery": ["delivered"],
   };
-  const order = getOrderById(orderId);
+  const order = await getOrderById(orderId);
 
   if (!order) {
     return {
@@ -203,7 +210,14 @@ export async function updateOrderStatusAction(formData) {
     };
   }
 
-  updateOrderStatus(orderId, status);
+  const updated = await updateOrderStatus(orderId, status);
+  if (!updated) {
+    return {
+      success: false,
+      code: "INVALID_STATUS",
+      message: "That status is not the next valid status for this order.",
+    };
+  }
   revalidatePath("/kitchen");
   revalidatePath("/orders");
   revalidatePath(`/orders/${orderId}`);

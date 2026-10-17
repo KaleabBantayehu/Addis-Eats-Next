@@ -25,7 +25,7 @@ export async function GET(request, { params }) {
   }
 
   const { id } = await params;
-  const order = getOrderById(id);
+  const order = await getOrderById(id);
 
   if (!order || (order.ownerId !== session.id && session.role !== "staff" && session.role !== "admin")) {
     return new Response(JSON.stringify({ error: "NOT_FOUND" }), {
@@ -49,7 +49,7 @@ export async function GET(request, { params }) {
       const totalSteps = 10;
 
       // Seed initial status from server
-      const currentOrder = getOrderById(id) || order;
+      const currentOrder = order;
       sendEvent({
         id: currentOrder.id,
         status: currentOrder.status,
@@ -70,40 +70,54 @@ export async function GET(request, { params }) {
         return;
       }
 
-      const intervalId = setInterval(() => {
-        const freshOrder = getOrderById(id);
-        if (!freshOrder) {
+      const intervalId = setInterval(async () => {
+        try {
+          const freshOrder = await getOrderById(id);
+          if (!freshOrder) {
+            clearInterval(intervalId);
+            controller.close();
+            return;
+          }
+
+          step = Math.min(step + 1, totalSteps);
+          const progress = step / totalSteps;
+          const courierLat =
+            RESTAURANT_COORDS[0] +
+            (targetCoords[0] - RESTAURANT_COORDS[0]) * progress;
+          const courierLng =
+            RESTAURANT_COORDS[1] +
+            (targetCoords[1] - RESTAURANT_COORDS[1]) * progress;
+          const eta = Math.max(0, Math.round(25 * (1 - progress)));
+
+          sendEvent({
+            id: freshOrder.id,
+            status: freshOrder.status,
+            area: freshOrder.area || "Addis Ababa",
+            total: freshOrder.total,
+            items: freshOrder.items || [],
+            createdAt: freshOrder.createdAt,
+            updatedAt: freshOrder.updatedAt || freshOrder.createdAt,
+            restaurantLocation: RESTAURANT_COORDS,
+            deliveryLocation: targetCoords,
+            courierLocation: [
+              Number(courierLat.toFixed(5)),
+              Number(courierLng.toFixed(5)),
+            ],
+            etaMinutes: freshOrder.status === "delivered" ? 0 : eta,
+          });
+
+          if (
+            freshOrder.status === "delivered" ||
+            freshOrder.status === "cancelled" ||
+            step >= totalSteps
+          ) {
+            clearInterval(intervalId);
+            controller.close();
+          }
+        } catch (error) {
           clearInterval(intervalId);
-          controller.close();
-          return;
-        }
-
-        step = Math.min(step + 1, totalSteps);
-        const progress = step / totalSteps;
-
-        // Interpolate courier coordinates from restaurant to delivery
-        const courierLat = RESTAURANT_COORDS[0] + (targetCoords[0] - RESTAURANT_COORDS[0]) * progress;
-        const courierLng = RESTAURANT_COORDS[1] + (targetCoords[1] - RESTAURANT_COORDS[1]) * progress;
-
-        const eta = Math.max(0, Math.round(25 * (1 - progress)));
-
-        sendEvent({
-          id: freshOrder.id,
-          status: freshOrder.status,
-          area: freshOrder.area || "Addis Ababa",
-          total: freshOrder.total,
-          items: freshOrder.items || [],
-          createdAt: freshOrder.createdAt,
-          updatedAt: new Date().toISOString(),
-          restaurantLocation: RESTAURANT_COORDS,
-          deliveryLocation: targetCoords,
-          courierLocation: [Number(courierLat.toFixed(5)), Number(courierLng.toFixed(5))],
-          etaMinutes: freshOrder.status === "delivered" ? 0 : eta,
-        });
-
-        if (freshOrder.status === "delivered" || freshOrder.status === "cancelled" || step >= totalSteps) {
-          clearInterval(intervalId);
-          controller.close();
+          console.error("Could not refresh the tracked order:", error);
+          controller.error(error);
         }
       }, 4000);
 
