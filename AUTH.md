@@ -18,6 +18,8 @@ The app expects `public.profiles` to use `id` referencing `auth.users(id)`, and 
 
 Set `NEXT_PUBLIC_SUPABASE_URL` to the project origin (for example, `https://<project-ref>.supabase.co`, without `/rest/v1`) and set `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local`. The publishable/anon key can be exposed to the browser only because RLS controls table access. Never add a Supabase service-role/secret key to a `NEXT_PUBLIC_` variable or client code.
 
+To enable Google sign-in, enable the Google provider in Supabase Auth and register the deployed `/auth/callback` URL in the provider's authorized redirect URLs. Configure the application origin with `NEXT_PUBLIC_SITE_URL` when it cannot be reliably derived from the request host.
+
 ## Authorization checkpoints
 
 | Surface | Server-side check |

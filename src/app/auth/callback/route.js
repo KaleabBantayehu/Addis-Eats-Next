@@ -26,7 +26,9 @@ export async function GET(request) {
     if (!error) {
       return NextResponse.redirect(new URL(target, request.url));
     }
+
+    console.error("Supabase OAuth callback exchange failed:", error);
   }
 
-  return NextResponse.redirect(new URL("/signin?error=confirmation", request.url));
+  return NextResponse.redirect(new URL("/signin?error=oauth", request.url));
 }

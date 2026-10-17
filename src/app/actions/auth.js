@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 
 function readText(formData, key) {
@@ -36,6 +37,44 @@ export async function signIn(formData) {
 
   revalidatePath("/", "layout");
   redirect(target);
+}
+
+export async function signInWithGoogle(formData) {
+  const target = safeNext(readText(formData, "next"));
+  const requestHeaders = await headers();
+  const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const forwardedHost = requestHeaders.get("x-forwarded-host");
+  const host = forwardedHost || requestHeaders.get("host");
+  const forwardedProto = requestHeaders.get("x-forwarded-proto");
+  const protocol =
+    forwardedProto === "http" || forwardedProto === "https"
+      ? forwardedProto
+      : host?.startsWith("localhost") || host?.startsWith("127.0.0.1")
+        ? "http"
+        : "https";
+
+  if (!configuredSiteUrl && !host) {
+    console.error("Google sign-in could not determine the application origin.");
+    redirect(`/signin?error=oauth&next=${encodeURIComponent(target)}`);
+  }
+
+  const siteUrl = (
+    configuredSiteUrl || `${protocol}://${host}`
+  ).replace(/\/$/, "");
+  const callbackUrl = new URL("/auth/callback", siteUrl);
+  callbackUrl.searchParams.set("next", target);
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: callbackUrl.toString() },
+  });
+
+  if (error || !data.url) {
+    console.error("Supabase Google sign-in failed:", error);
+    redirect(`/signin?error=oauth&next=${encodeURIComponent(target)}`);
+  }
+
+  redirect(data.url);
 }
 
 export async function signUp(formData) {
