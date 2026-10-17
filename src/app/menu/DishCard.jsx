@@ -29,6 +29,7 @@ export default function DishCard({
   isFavorite = false,
 }) {
   const isAvailable = dish.orderable !== false && dish.available !== false;
+  const imageUrl = dish.image_url;
 
   return (
     <article className="app-card group flex h-full flex-col justify-between overflow-hidden transition-all duration-200 hover:-translate-y-0.5">
@@ -39,12 +40,12 @@ export default function DishCard({
             href={`/menu/${dish.id}`}
             className="block h-full w-full rounded-t-xl focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-inset"
           >
-            {dish.image ? (
+            {imageUrl ? (
               <Image
-                src={dish.image}
+                src={imageUrl}
                 alt={dish.name}
                 fill
-                unoptimized={/^https?:\/\//i.test(dish.image)}
+                unoptimized={/^https?:\/\//i.test(imageUrl)}
                 preload={fetchPriorityHigh}
                 loading={fetchPriorityHigh ? "eager" : undefined}
                 fetchPriority={fetchPriorityHigh ? "high" : undefined}

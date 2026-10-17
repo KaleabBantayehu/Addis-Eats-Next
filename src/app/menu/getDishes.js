@@ -1,21 +1,27 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 
-const DISH_COLUMNS =
-  "id, name, description, price, category, image_url, ingredients, is_available, is_hidden, finished_today";
-
 function normalizeDish(dish) {
+  const imageUrl =
+    (typeof dish.image_url === "string" && dish.image_url.trim() && dish.image_url) ||
+    (typeof dish.image === "string" && dish.image.trim() && dish.image) ||
+    null;
+
   return {
-    ...dish,
     id: Number(dish.id),
+    name: dish.name,
+    description: dish.description,
     price: Number(dish.price),
-    image: dish.image_url || dish.image || "",
-    imageUrl: dish.image_url || dish.image || "",
+    category: dish.category,
+    image_url: imageUrl,
+    ingredients: Array.isArray(dish.ingredients) ? dish.ingredients : [],
+    is_available: dish.is_available,
+    is_hidden: dish.is_hidden,
+    finished_today: dish.finished_today,
     available: dish.is_available !== false,
     orderable: dish.is_available !== false && dish.finished_today !== true,
     finishedToday: dish.finished_today === true,
     isHidden: dish.is_hidden === true,
-    ingredients: Array.isArray(dish.ingredients) ? dish.ingredients : [],
   };
 }
 
@@ -23,7 +29,7 @@ export async function getDishes() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("dishes")
-    .select(DISH_COLUMNS)
+    .select("*")
     .eq("is_hidden", false)
     .order("id", { ascending: true });
 
@@ -42,7 +48,7 @@ export async function getDishById(id) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("dishes")
-    .select(DISH_COLUMNS)
+    .select("*")
     .eq("id", dishId)
     .eq("is_hidden", false)
     .maybeSingle();
@@ -59,7 +65,7 @@ export async function getDishesForManagement() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("dishes")
-    .select(DISH_COLUMNS)
+    .select("*")
     .order("id", { ascending: true });
 
   if (error) {

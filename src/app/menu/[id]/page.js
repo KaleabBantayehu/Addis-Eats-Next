@@ -14,7 +14,7 @@ export async function generateMetadata({ params }) {
   if (!dish) return { title: "Dish not found" };
 
   const description = `${dish.name} ${dish.price} ETB. ${dish.description}`;
-  const imageUrl = dish.imageUrl || dish.image;
+  const imageUrl = dish.image_url;
 
   return {
     title: dish.name,
@@ -23,16 +23,20 @@ export async function generateMetadata({ params }) {
       title: dish.name,
       description,
       type: "website",
-      images: [{
-        url: imageUrl,
-        alt: `${dish.name} - ${dish.price} ETB`,
-      }],
+      ...(imageUrl && {
+        images: [{
+          url: new URL(imageUrl, getSiteUrl()).toString(),
+          alt: `${dish.name} - ${dish.price} ETB`,
+        }],
+      }),
     },
     twitter: {
       card: "summary_large_image",
       title: dish.name,
       description,
-      images: [imageUrl],
+      ...(imageUrl && {
+        images: [new URL(imageUrl, getSiteUrl()).toString()],
+      }),
     },
   };
 }
@@ -49,16 +53,14 @@ export default async function DishDetailPage({ params }) {
   const favoriteIds = session ? await getFavoriteIdsForUser(session.id) : [];
   const ingredients = dish.ingredients;
 
-  // 2. Define JSON-LD AFTER dish is guaranteed to exist
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "MenuItem",
     name: dish.name,
     description: dish.description,
-    image: new URL(
-      dish.imageUrl || dish.image,
-      getSiteUrl(),
-    ).toString(),
+    ...(dish.image_url && {
+      image: new URL(dish.image_url, getSiteUrl()).toString(),
+    }),
     offers: {
       "@type": "Offer",
       price: dish.price,
@@ -66,7 +68,6 @@ export default async function DishDetailPage({ params }) {
     },
   };
 
-  // 3. Return JSX with the <script> inside <main>
   return (
     <main className="page-shell py-6 sm:py-9">
       {/* Structured Data for Search Engines */}
@@ -87,17 +88,19 @@ export default async function DishDetailPage({ params }) {
 
       <article className="grid items-start gap-5 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8">
           <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-surface-muted shadow-card lg:aspect-[1.05/1]">
-            <Image
-              src={dish.image}
-              alt={dish.name}
-              fill
-              unoptimized={/^https?:\/\//i.test(dish.image)}
-              preload
-              loading="eager"
-              fetchPriority="high"
-              sizes="(max-width: 1024px) 100vw, 52vw"
-              className="object-cover"
-            />
+            {dish.image_url ? (
+              <Image
+                src={dish.image_url}
+                alt={dish.name}
+                fill
+                unoptimized={/^https?:\/\//i.test(dish.image_url)}
+                preload
+                loading="eager"
+                fetchPriority="high"
+                sizes="(max-width: 1024px) 100vw, 52vw"
+                className="object-cover"
+              />
+            ) : null}
             {session ? (
               <FavoriteButton
                 dishId={dish.id}
