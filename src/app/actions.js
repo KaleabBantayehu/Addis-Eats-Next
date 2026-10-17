@@ -104,6 +104,8 @@ export async function placeOrder(
   }
 
   revalidatePath("/orders");
+  revalidatePath("/kitchen");
+  revalidatePath("/dashboard");
 
   return {
     success: true,
@@ -166,6 +168,8 @@ export async function cancelOrder(
   }
 
   revalidatePath("/orders");
+  revalidatePath("/dashboard");
+  revalidatePath("/kitchen");
 
   return {
     success: true,
@@ -177,20 +181,20 @@ export async function cancelOrder(
 export async function updateOrderStatusAction(formData) {
   const session = await getSession();
 
-  if (!session || session.role !== "staff") {
+  if (!session || (session.role !== "staff" && session.role !== "admin")) {
     return {
       success: false,
       code: "FORBIDDEN",
-      message: "Staff access is required.",
+      message: "Staff or administrator access is required.",
     };
   }
 
   const orderId = String(formData.get("orderId") ?? "");
   const status = String(formData.get("status") ?? "");
   const allowedTransitions = {
-    placed: ["preparing"],
-    preparing: ["out-for-delivery"],
-    "out-for-delivery": ["delivered"],
+    pending: ["preparing", "cancelled"],
+    preparing: ["ready", "cancelled"],
+    ready: ["delivered", "cancelled"],
   };
   const order = await getOrderById(orderId);
 
@@ -220,6 +224,7 @@ export async function updateOrderStatusAction(formData) {
   }
   revalidatePath("/kitchen");
   revalidatePath("/orders");
+  revalidatePath("/dashboard");
   revalidatePath(`/orders/${orderId}`);
 
   return { success: true, message: "Order status updated." };

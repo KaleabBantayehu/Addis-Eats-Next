@@ -6,6 +6,7 @@ const ORDER_COLUMNS =
   "id, owner_id, name, phone, area, notes, status, total, created_at, updated_at, order_items(id, dish_id, dish_name, unit_price, quantity, line_total)";
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const ORDER_PAGE_SIZE = 500;
 
 function normalizeOrder(order) {
   return {
@@ -49,33 +50,47 @@ export async function getOrderById(id) {
 
 export async function getOrdersByOwner(ownerId) {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("orders")
-    .select(ORDER_COLUMNS)
-    .eq("owner_id", ownerId)
-    .order("created_at", { ascending: false });
+  const rows = [];
+  for (let offset = 0; ; offset += ORDER_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from("orders")
+      .select(ORDER_COLUMNS)
+      .eq("owner_id", ownerId)
+      .order("created_at", { ascending: false })
+      .range(offset, offset + ORDER_PAGE_SIZE - 1);
 
-  if (error) {
-    console.error("Could not load the user's orders:", error);
-    throw new Error("Your orders are temporarily unavailable.");
+    if (error) {
+      console.error("Could not load the user's orders:", error);
+      throw new Error("Your orders are temporarily unavailable.");
+    }
+
+    rows.push(...(data ?? []));
+    if (!data || data.length < ORDER_PAGE_SIZE) break;
   }
 
-  return (data ?? []).map(normalizeOrder);
+  return rows.map(normalizeOrder);
 }
 
 export async function getAllOrders() {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("orders")
-    .select(ORDER_COLUMNS)
-    .order("created_at", { ascending: false });
+  const rows = [];
+  for (let offset = 0; ; offset += ORDER_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from("orders")
+      .select(ORDER_COLUMNS)
+      .order("created_at", { ascending: false })
+      .range(offset, offset + ORDER_PAGE_SIZE - 1);
 
-  if (error) {
-    console.error("Could not load orders for the kitchen:", error);
-    throw new Error("Kitchen orders are temporarily unavailable.");
+    if (error) {
+      console.error("Could not load orders for the kitchen:", error);
+      throw new Error("Kitchen orders are temporarily unavailable.");
+    }
+
+    rows.push(...(data ?? []));
+    if (!data || data.length < ORDER_PAGE_SIZE) break;
   }
 
-  return (data ?? []).map(normalizeOrder);
+  return rows.map(normalizeOrder);
 }
 
 export async function markOrderCancelled(id) {

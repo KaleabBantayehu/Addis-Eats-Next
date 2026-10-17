@@ -25,6 +25,8 @@ export async function createOrderFromInput(input, ownerId) {
     .from("dishes")
     .select("id, name, price")
     .eq("is_available", true)
+    .eq("is_hidden", false)
+    .eq("finished_today", false)
     .in("id", dishIds.map(Number));
 
   if (dishesError) {

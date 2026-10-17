@@ -16,6 +16,14 @@ export const metadata = {
       description:
         "Browse our full menu of authentic Ethiopian dishes, kitfo, tibs, pizzas, and combos.",
       type: "website",
+      images: ["/images/hero.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Addis Eats Menu",
+    description:
+      "Browse our full menu of authentic Ethiopian dishes, kitfo, tibs, pizzas, and combos.",
+    images: ["/images/hero.png"],
   },
 };
 
@@ -25,7 +33,7 @@ export default async function MenuPage({ searchParams }) {
   const params = await searchParams;
   const dishes = await getDishes();
   const session = await getSession();
-  const favoriteIds = session ? getFavoriteIdsForUser(session.id) : [];
+  const favoriteIds = session ? await getFavoriteIdsForUser(session.id) : [];
   const dishCategories = [...new Set(dishes.map((dish) => dish.category))];
   const categories = ["All", ...dishCategories];
   const searchTerm = (params?.search || "").trim();

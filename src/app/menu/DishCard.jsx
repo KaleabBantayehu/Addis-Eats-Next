@@ -28,7 +28,7 @@ export default function DishCard({
   showFavorite = false,
   isFavorite = false,
 }) {
-  const isAvailable = dish.available !== false;
+  const isAvailable = dish.orderable !== false && dish.available !== false;
 
   return (
     <article className="app-card group flex h-full flex-col justify-between overflow-hidden transition-all duration-200 hover:-translate-y-0.5">
@@ -44,6 +44,7 @@ export default function DishCard({
                 src={dish.image}
                 alt={dish.name}
                 fill
+                unoptimized={/^https?:\/\//i.test(dish.image)}
                 preload={fetchPriorityHigh}
                 loading={fetchPriorityHigh ? "eager" : undefined}
                 fetchPriority={fetchPriorityHigh ? "high" : undefined}
@@ -59,6 +60,11 @@ export default function DishCard({
             {dish.category && (
               <span className="absolute top-3 left-3 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground shadow-card">
                 {dish.category}
+              </span>
+            )}
+            {(dish.finishedToday || !dish.available) && (
+              <span className="absolute bottom-3 left-3 rounded-full bg-surface px-3 py-1 text-xs font-semibold text-foreground shadow-card">
+                {dish.finishedToday ? "Finished for today" : "Currently unavailable"}
               </span>
             )}
           </Link>
@@ -137,7 +143,9 @@ export default function DishCard({
 
         <p className="min-h-[1.25rem] text-right text-xs font-bold text-foreground" role="status">
           {!isAvailable ? (
-              <span className="text-red-700 dark:text-red-300">Currently unavailable</span>
+            <span className="text-red-700 dark:text-red-300">
+              {dish.finishedToday ? "Finished for today" : "Currently unavailable"}
+            </span>
           ) : null}
         </p>
       </div>

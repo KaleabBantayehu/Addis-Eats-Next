@@ -87,6 +87,7 @@ export default function TrackingClient({ orderId, initialData }) {
       case "delivered":
         return "border border-secondary/30 bg-secondary/10 text-secondary dark:bg-secondary/15";
       case "out-for-delivery":
+      case "ready":
         return "border border-accent/40 bg-accent/15 text-accent-foreground dark:text-accent";
       case "preparing":
         return "border border-border bg-surface-muted text-foreground-muted";

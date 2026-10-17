@@ -25,11 +25,13 @@ To enable Google sign-in, enable the Google provider in Supabase Auth and regist
 | Surface | Server-side check |
 |---|---|
 | `/checkout`, `/orders`, `/favorites` | Verified Supabase claims; pages and actions re-check with `getSession()` |
+| `/kitchen`, `/dashboard/menu` | `getSession()` and `session.role` is `staff` or `admin` |
 | `/dashboard` | `getSession()` and `session.role === "admin"` |
-| `/kitchen` | `getSession()` and `session.role === "staff"` |
 | Order details, APIs, and tracking | Verified identity and order ownership; staff/admin access only where explicitly allowed |
 | `placeOrder`, cancellation, status updates, favorites actions | Each action re-checks identity, owner, role, and/or valid status transition at mutation time |
 
 Use `auth.uid()` in Supabase RLS policies for database ownership checks. The server client carries the signed-in Supabase Auth cookie, so Postgres receives the authenticated JWT. The old custom `session` HMAC cookie and fixture profiles are no longer used.
 
 Apply `supabase/migrations/202610160002_favorites_orders.sql` after the profile security migration. It creates the favorites and order tables, enables owner/staff RLS for reads, and exposes authenticated RPCs that validate ownership and order status transitions. `place_order` reads current available dish prices inside one database transaction; clients cannot insert or alter orders or order items directly.
+
+Then apply `supabase/migrations/202610170001_menu_management_order_statuses.sql` to enable role-gated dish management, public visibility policies, dish availability fields, and the staff order progression from `pending` through `preparing` and `ready` to `delivered` (with cancellation before delivery).

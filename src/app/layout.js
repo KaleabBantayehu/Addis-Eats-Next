@@ -3,8 +3,10 @@ import { manrope } from "./ui/fonts";
 import Navbar from "./Navbar";
 import MobileNavigation from "./MobileNavigation";
 import { getSession } from "@/lib/session";
+import { getSiteUrl } from "@/lib/site-url";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const siteUrl = getSiteUrl();
+const defaultFoodImage = "/images/hero.png";
 
 export const metadata = {
   title: {
@@ -23,9 +25,7 @@ export const metadata = {
     siteName: "Addis Eats",
     images: [
       {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
+        url: defaultFoodImage,
         alt: "Addis Eats Ethiopian food delivery",
       },
     ],
@@ -35,7 +35,7 @@ export const metadata = {
     title: "Addis Eats",
     description:
       "Order authentic Ethiopian food for delivery across Addis Ababa.",
-    images: ["/opengraph-image"],
+    images: [defaultFoodImage],
   },
 };
 
@@ -45,7 +45,7 @@ export default async function RootLayout({ children }) {
     "@context": "https://schema.org",
     "@type": "Restaurant",
     name: "Addis Eats",
-    image: `${siteUrl}/opengraph-image`,
+    image: new URL(defaultFoodImage, siteUrl).toString(),
     url: siteUrl,
     priceRange: "$$",
     servesCuisine: ["Ethiopian", "International"],

@@ -36,7 +36,7 @@ export default async function OrdersPage() {
             <li key={order.id} className="app-card p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div><p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted">Order</p><h2 className="mt-1 text-xl font-bold">#{order.id}</h2></div>
-                <span className={`rounded-full px-3 py-1.5 text-sm font-semibold capitalize ${order.status === "delivered" ? "bg-secondary/10 text-secondary" : order.status === "out-for-delivery" ? "bg-accent/20 text-accent-foreground dark:text-accent" : order.status === "cancelled" ? "bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-200" : "bg-surface-muted text-foreground-muted"}`}>{order.status.replaceAll("-", " ")}</span>
+                <span className={`rounded-full px-3 py-1.5 text-sm font-semibold capitalize ${order.status === "delivered" ? "bg-secondary/10 text-secondary" : order.status === "ready" ? "bg-accent/20 text-accent-foreground dark:text-accent" : order.status === "cancelled" ? "bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-200" : "bg-surface-muted text-foreground-muted"}`}>{order.status.replaceAll("-", " ")}</span>
               </div>
               <p className="mt-3 text-xs text-foreground-muted">Placed {new Date(order.createdAt).toLocaleString("en-ET", { dateStyle: "medium", timeStyle: "short" })}</p>
               <p className="mt-4 border-t border-border pt-4 text-sm leading-6 text-foreground-muted">{order.items.map((item) => `${item.quantity} × ${item.name}`).join(", ")}</p>

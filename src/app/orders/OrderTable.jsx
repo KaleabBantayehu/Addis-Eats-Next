@@ -96,11 +96,13 @@ export default function OrderTable({ orders, currentSort, currentDir }) {
               <td className="px-6 py-4">
                 <span
                   className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                    o.status === "Delivered"
+                    o.status === "delivered"
                       ? "bg-green-100 text-green-800"
-                      : o.status === "Preparing"
+                      : o.status === "preparing" || o.status === "ready"
                       ? "bg-amber-100 text-amber-800"
-                      : "bg-red-100 text-red-800"
+                      : o.status === "cancelled"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-surface-muted text-foreground-muted"
                   }`}
                 >
                   {o.status}

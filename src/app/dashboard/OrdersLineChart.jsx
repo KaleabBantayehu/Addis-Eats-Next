@@ -14,7 +14,7 @@ export default function OrdersLineChart({ data }) {
     <div className="app-card min-w-0 space-y-6 p-4 sm:p-6">
       <div>
         <h2 className="text-lg font-bold text-foreground">Orders over Time</h2>
-        <p className="text-sm text-foreground-muted">Daily order count, October 2026</p>
+        <p className="text-sm text-foreground-muted">Daily order count, last 30 days</p>
       </div>
 
       <div className="h-72 w-full">
@@ -49,7 +49,7 @@ export default function OrdersLineChart({ data }) {
         </h3>
         <table className="w-full text-left text-xs text-foreground-muted">
           <caption className="sr-only">
-            Daily order numbers for October 2026
+            Daily order numbers for the last 30 days
           </caption>
           <thead>
             <tr className="border-b border-border text-foreground">

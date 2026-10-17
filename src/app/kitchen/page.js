@@ -2,6 +2,7 @@ import { getSession } from "@/lib/session";
 import { getAllOrders } from "@/lib/orders";
 import { updateOrderStatusAction } from "@/app/actions";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export const metadata = {
   title: "Kitchen Dashboard",
@@ -12,8 +13,11 @@ export const metadata = {
 export default async function KitchenPage() {
   const session = await getSession();
   // Role checked server-side
-  if (!session || session.role !== "staff") redirect("/");
+  if (!session || (session.role !== "staff" && session.role !== "admin")) redirect("/");
   const orders = await getAllOrders();
+  const activeOrders = orders.filter(
+    (order) => !["delivered", "cancelled"].includes(order.status),
+  );
 
   return (
     <main className="page-shell py-8 sm:py-10">
@@ -22,11 +26,11 @@ export default async function KitchenPage() {
         <h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Kitchen Display</h1>
         <p className="mt-2 text-foreground-muted">Active orders queued for cooking.</p>
       </header>
-      {orders.length === 0 ? (
-        <p className="app-card p-8 text-center text-foreground-muted">No orders have been placed yet.</p>
+      {activeOrders.length === 0 ? (
+        <p className="app-card p-8 text-center text-foreground-muted">No active orders are waiting in the kitchen.</p>
       ) : (
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {orders.map((order) => (
+          {activeOrders.map((order) => (
             <li key={order.id} className="app-card flex flex-col p-5 sm:p-6">
               <div className="flex items-start justify-between gap-3">
                 <h2 className="text-xl font-bold">Order <span className="price-number">#{order.id}</span></h2>
@@ -42,9 +46,22 @@ export default async function KitchenPage() {
                     className="app-control flex min-h-12 w-full items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold capitalize text-primary-foreground transition-colors hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
                     name="status"
                     type="submit"
-                    value={{ placed: "preparing", preparing: "out-for-delivery", "out-for-delivery": "delivered" }[order.status]}
+                    value={{ pending: "preparing", preparing: "ready", ready: "delivered" }[order.status]}
                   >
-                    Mark {{ placed: "preparing", preparing: "out-for-delivery", "out-for-delivery": "delivered" }[order.status].replaceAll("-", " ")}
+                    Mark {{ pending: "preparing", preparing: "ready", ready: "delivered" }[order.status]}
+                  </button>
+                </form>
+              )}
+              {!["cancelled", "delivered"].includes(order.status) && (
+                <form action={updateOrderStatusAction} className="mt-2">
+                  <input type="hidden" name="orderId" value={order.id} />
+                  <button
+                    className="app-control flex min-h-12 w-full items-center justify-center rounded-lg border border-red-300 px-4 text-sm font-semibold text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 dark:text-red-300 dark:hover:bg-red-950"
+                    name="status"
+                    type="submit"
+                    value="cancelled"
+                  >
+                    Cancel order
                   </button>
                 </form>
               )}
@@ -52,6 +69,9 @@ export default async function KitchenPage() {
           ))}
         </ul>
       )}
+      <Link href="/dashboard/menu" className="app-control inline-flex min-h-12 items-center rounded-lg border border-secondary px-4 font-semibold text-secondary hover:bg-surface-muted">
+        Manage menu
+      </Link>
     </main>
   );
 }

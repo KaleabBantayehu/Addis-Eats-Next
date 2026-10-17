@@ -2,10 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getDishById } from "../getDishes";
-import { CheckCircle2 }  from "lucide-react";
+import { CheckCircle2,  ArrowLeft }  from "lucide-react";
 import { getSession } from "@/lib/session";
 import { getFavoriteIdsForUser } from "@/lib/favorites";
 import { FavoriteButton } from "../DishCard";
+import { getSiteUrl } from "@/lib/site-url";
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -13,6 +14,7 @@ export async function generateMetadata({ params }) {
   if (!dish) return { title: "Dish not found" };
 
   const description = `${dish.name} ${dish.price} ETB. ${dish.description}`;
+  const imageUrl = dish.imageUrl || dish.image;
 
   return {
     title: dish.name,
@@ -22,17 +24,15 @@ export async function generateMetadata({ params }) {
       description,
       type: "website",
       images: [{
-        url: `/menu/${id}/opengraph-image`,
-        width: 1200,
-        height: 630,
-        alt: `${dish.name} â€” ${dish.price} ETB`,
+        url: imageUrl,
+        alt: `${dish.name} - ${dish.price} ETB`,
       }],
     },
     twitter: {
       card: "summary_large_image",
       title: dish.name,
       description,
-      images: [`/menu/${id}/opengraph-image`],
+      images: [imageUrl],
     },
   };
 }
@@ -46,7 +46,7 @@ export default async function DishDetailPage({ params }) {
   if (!dish) notFound();
 
   const session = await getSession();
-  const favoriteIds = session ? getFavoriteIdsForUser(session.id) : [];
+  const favoriteIds = session ? await getFavoriteIdsForUser(session.id) : [];
   const ingredients = dish.ingredients;
 
   // 2. Define JSON-LD AFTER dish is guaranteed to exist
@@ -55,7 +55,10 @@ export default async function DishDetailPage({ params }) {
     "@type": "MenuItem",
     name: dish.name,
     description: dish.description,
-    image: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}${dish.image}`,
+    image: new URL(
+      dish.imageUrl || dish.image,
+      getSiteUrl(),
+    ).toString(),
     offers: {
       "@type": "Offer",
       price: dish.price,
@@ -77,8 +80,9 @@ export default async function DishDetailPage({ params }) {
       <Link
         href="/menu"
         className="mb-5 inline-flex min-h-12 items-center rounded-lg px-3 py-2 font-semibold text-secondary transition-colors hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
-      >
-        â† Back to Menu
+      >  
+         <ArrowLeft className="h-5 w-5" />
+         Back to Menu
       </Link>
 
       <article className="grid items-start gap-5 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8">
@@ -87,6 +91,7 @@ export default async function DishDetailPage({ params }) {
               src={dish.image}
               alt={dish.name}
               fill
+              unoptimized={/^https?:\/\//i.test(dish.image)}
               preload
               loading="eager"
               fetchPriority="high"
@@ -108,6 +113,12 @@ export default async function DishDetailPage({ params }) {
             </p>
 
             <h1 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">{dish.name}</h1>
+
+            {dish.finishedToday || !dish.available ? (
+              <p className="mb-4 inline-flex rounded-full bg-surface-muted px-3 py-1.5 text-sm font-semibold text-foreground-muted">
+                {dish.finishedToday ? "Finished for today" : "Currently unavailable"}
+              </p>
+            ) : null}
 
             <p className="mb-6 leading-7 text-foreground-muted">{dish.description}</p>
 

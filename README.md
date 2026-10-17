@@ -56,6 +56,10 @@ Keep these values in the project-root `.env.local`; it is ignored by Git. Never 
 
 Signed-in users can save dishes from menu cards, search results, and dish detail pages, then manage them at `/favorites`. Favorites and orders are stored in Supabase and scoped to the authenticated account by Row Level Security. Apply the migrations in `supabase/migrations/` to the matching project schema before using these features. Checkout sends only dish IDs and quantities; the server and `place_order` database function resolve prices from the available dishes catalog and persist order items and totals.
 
+Staff and administrators can manage the menu at `/dashboard/menu`; the admin dashboard and kitchen queue read persistent orders and line items from Supabase. Apply `202610170001_menu_management_order_statuses.sql` after the favorites/orders migration to add dish visibility and daily availability flags and enable the `pending` → `preparing` → `ready` → `delivered` order flow.
+
+Dish detail social cards use each record's `image_url`; the site-wide card uses the food photo at `public/images/hero.png`. Set `NEXT_PUBLIC_SITE_URL` to the canonical production origin so generated metadata uses absolute production URLs; otherwise production defaults to the deployed Addis Eats origin and development to localhost.
+
 ---
 
 ## 4. Accounts & Roles

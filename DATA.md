@@ -8,7 +8,7 @@ This document details every data source, rendering boundary, cache policy, and s
 
 | Data / Interaction | Execution Environment | Query Key / Source | Seed & Refresh Policy | Architectural Rationale |
 |---|---|---|---|---|
-| **Dish Catalog (`/menu`)** | Server Component | `getDishes()` in `src/lib/dishes.js` | Server-rendered at request time; revalidates every 60s (`revalidate = 60`). | Fast first paint (FCP), fully indexable for search engines without waiting for client JS. |
+| **Dish Catalog (`/menu`)** | Server Component | `getDishes()` in `src/app/menu/getDishes.js` | Reads current catalog visibility and availability flags; search endpoint is no-store. | Hidden dishes are omitted; finished-today and disabled dishes remain visible with an unavailable badge. |
 | **Dish Detail (`/menu/[id]`)** | Static Site Generation (SSG) | Static dish catalog keyed by `params.id` | Pre-rendered at build time via `generateStaticParams()`; unknown IDs call `notFound()`. | Zero runtime database query; served instantly from CDN edge nodes. |
 | **Live Menu Search** | Client SWR Query | `/api/dishes?search=${debounced}&page=${page}` (disabled when empty) | Seeded with server `initialData`; debounced by 300ms; `keepPreviousData: true`; 60s deduping. | Minimizes keystroke network spam while maintaining seamless list transitions without layout flash. |
 | **Search Pagination** | Client SWR Query | Same API key with page counter | 6 items per page; previous page retained during page navigation. | Prevents empty flicker during page changes. |
@@ -17,7 +17,8 @@ This document details every data source, rendering boundary, cache policy, and s
 | **Favorites (`/favorites`, menu, dish detail)** | Server Component + Server Action | `getFavoriteIdsForUser(session.id)` and `setFavoriteAction(dishId, isFavorite)` in `src/lib/favorites.js` | Reads and writes use the verified Supabase Auth session and `auth.uid()`-scoped RLS policies. | Favorites persist in the Supabase `favorites` table and are isolated by account. |
 | **Order Details (`/orders/[id]`)** | Hybrid Server + Client | `getOrderById(id)` seeded into `OrderStatusClient` | Server seeds `initialOrder`; client SWR polls `/api/orders/${id}` every 5s (`refreshInterval: 5000`). | Immediate initial paint without spinner; live status updates during food prep. |
 | **Live Map & SSE Tracking (`/track/[id]`)** | Hybrid Server + Client SSE | `/api/orders/[id]/stream` via `EventSource` | Server pre-seeds courier/delivery coordinates; client consumes live SSE stream updates. `useEffect` closes connection on unmount or `delivered` status. | Unidirectional real-time courier telemetry without WebSocket connection overhead or polling churn. |
-| **Kitchen Dashboard (`/kitchen`)** | Server Component | `getAllOrders()` from `src/lib/orders.js` | Server-rendered on demand (`force-dynamic`); role restricted to `staff`. | Kitchen staff immediately see latest incoming orders with server-validated state transitions. |
+| **Kitchen Dashboard (`/kitchen`)** | Server Component | `getAllOrders()` from `src/lib/orders.js` | Reads paginated live Supabase orders with nested order items; route is on-demand. | Staff/admin status changes use the `advance_order_status` RPC and enforce valid transitions in the database. |
+| **Admin Dashboard (`/dashboard`)** | Server Component | `getAllOrders()` from `src/lib/orders.js` | Reads paginated Supabase orders and line-item snapshots on demand. | Computes delivered revenue, order counts, area trends, and top-selling dishes from persisted records. |
 | **Order History CSV Export** | Client-side Generator | In-memory order record via `src/lib/csv.js` | Triggered on demand by user click; generates RFC 4180 CSV blob and revokes object URL immediately. | Pure client-side operation with zero server compute overhead or storage footprint. |
 
 ---
@@ -36,12 +37,12 @@ This document details every data source, rendering boundary, cache policy, and s
     "hasMore": true
   }
   ```
-- **Caching**: `Cache-Control: public, s-maxage=60, stale-while-revalidate=120`
+- **Caching**: `Cache-Control: private, no-store`
 
 ### `POST /api/orders`
 - **Authentication**: Required (verified Supabase Auth session)
 - **Body**: `{ items: [{ id, quantity }], area, phone, notes }`
-- **Security Logic**: Client payloads contain no trusted prices. The server validates dish availability and the `place_order` database function resolves each current price from `public.dishes`, calculates line totals and the order total, then atomically inserts the order and its line items. The function assigns `user_id` from `auth.uid()`.
+- **Security Logic**: Client payloads contain no trusted prices. The server validates dish availability and the `place_order` database function resolves each current price from `public.dishes`, calculates line totals and the order total, then atomically inserts the order and its line items. The function assigns `owner_id` from `auth.uid()`.
 - **Response**: `{ success: true, orderId: "1", total: 420 }`
 
 ### `GET /api/orders/[id]`
@@ -57,7 +58,7 @@ This document details every data source, rendering boundary, cache policy, and s
   - `Content-Type: text/event-stream; charset=utf-8`
   - `Cache-Control: no-cache, no-transform`
   - `Connection: keep-alive`
-- **Framing**: `data: {"id":"1","status":"out-for-delivery","courierLocation":[...],"etaMinutes":15}\n\n`
+- **Framing**: `data: {"id":"uuid","status":"ready","courierLocation":[...],"etaMinutes":15}\n\n`
 - **Stream Termination**: Stream automatically closes when order status reaches `delivered` or client disconnects.
 
 ---
