@@ -1,56 +1,56 @@
-# Addis Eats — Full-Stack Ethiopian Food Delivery
+# Addis Eats - Full-Stack Ethiopian Food Delivery
 
-Addis Eats is a production-hardened Next.js 16 App Router application for discovering Ethiopian culinary dishes, managing an interactive shopping cart, placing authenticated orders, and tracking couriers in real-time on an interactive map.
+Addis Eats is a Next.js 16 App Router application for discovering Ethiopian culinary dishes, managing an interactive shopping cart, placing authenticated orders, and tracking deliveries.
 
 ---
 
 ## 1. Live Deployment & Verification Links
 
-- **Live Production URL**: `https://addis-eats-capstone.vercel.app` *(or your imported Vercel URL)*
-- **GitHub Repository**: `https://github.com/kaleabbantayehu/addis-eats`
-- **Sitemap**: `/sitemap.xml`
-- **Robots**: `/robots.txt`
+- **Live application**: [https://addis-eats-next-psi.vercel.app/](https://addis-eats-next-psi.vercel.app/)
+- **GitHub repository**: [KaleabBantayehu/Addis-Eats-Next](https://github.com/KaleabBantayehu/Addis-Eats-Next)
+- **Sitemap**: [https://addis-eats-next-psi.vercel.app/sitemap.xml](https://addis-eats-next-psi.vercel.app/sitemap.xml)
+- **Robots**: [https://addis-eats-next-psi.vercel.app/robots.txt](https://addis-eats-next-psi.vercel.app/robots.txt)
 
 ---
 
-## 2. Quickstart & Clone Test (Clean Setup from Scratch)
+## 2. Local Development
 
-Tested with Node.js `v20.9.0` or newer and `npm 10+`:
+Use Node.js `20.9.0` or newer and npm `10` or newer:
 
 ```bash
-# 1. Clone repository
-git clone https://github.com/kaleabbantayehu/addis-eats.git
-cd addis-eats
+# Clone the repository
+git clone https://github.com/KaleabBantayehu/Addis-Eats-Next.git
+cd Addis-Eats-Next
 
-# 2. Install dependencies cleanly
+# Install dependencies
 npm install
 
-# 3. Configure environment variables
+# Configure local environment variables
 cp .env.example .env.local
 
-# 4. Run automated checks & production build
+# Run checks and create a production build
 npm run lint
 npm run build
 
-# 5. Start production server
+# Start the production build locally
 npm run start
 ```
-Visit `http://localhost:3000` to interact with the production build locally.
+The local production build is available at `http://localhost:3000`. The deployed application is available at [https://addis-eats-next-psi.vercel.app/](https://addis-eats-next-psi.vercel.app/).
 
 ---
 
 ## 3. Environment Variables Reference
 
-Defined in `.env.example`:
+Set local values in `.env.local`. The public-prefixed variables are supported; where noted, the server also accepts non-prefixed aliases.
 
 | Variable | Environment | Description | Example Value |
 |---|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Public | Supabase project origin; omit `/rest/v1`. | `https://<project-ref>.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Supabase publishable/anon key; database access is limited by RLS. | Copy from Supabase project API settings. |
-| `NEXT_PUBLIC_SITE_URL` | Public (optional) | Canonical origin for metadata, sitemaps, and robots. Defaults to `http://localhost:3000`. | `http://localhost:3000` |
+| `NEXT_PUBLIC_SUPABASE_URL` or `SUPABASE_URL` | Public URL | Supabase project origin; omit `/rest/v1`. | `https://<project-ref>.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_PUBLISHABLE_KEY`, or `SUPABASE_ANON_KEY` | Public key | Supabase publishable/anon key; database access is limited by RLS. | Copy from Supabase project API settings. |
+| `NEXT_PUBLIC_SITE_URL` | Optional | Canonical origin for metadata, sitemap, and robots. Set to the production URL in deployment; local development defaults to `http://localhost:3000`. | `https://addis-eats-next-psi.vercel.app` |
 | `PORT` | Local runtime (optional) | Next.js HTTP port. Defaults to `3000`. | `3000` |
 
-Keep these values in the project-root `.env.local`; it is ignored by Git. Never expose a Supabase service-role/secret key in browser code or a `NEXT_PUBLIC_` variable.
+Keep local values in the project-root `.env.local`; it is ignored by Git. Never expose a Supabase service-role/secret key in browser code or a `NEXT_PUBLIC_` variable.
 
 ## Favorites and Orders
 
@@ -58,7 +58,7 @@ Signed-in users can save dishes from menu cards, search results, and dish detail
 
 Staff and administrators can manage the menu at `/dashboard/menu`; the admin dashboard and kitchen queue read persistent orders and line items from Supabase. Apply `202610170001_menu_management_order_statuses.sql` after the favorites/orders migration to add dish visibility and daily availability flags and enable the `pending` → `preparing` → `ready` → `delivered` order flow.
 
-Dish detail social cards use each record's `image_url`; the site-wide card uses the food photo at `public/images/hero.png`. Set `NEXT_PUBLIC_SITE_URL` to the canonical production origin so generated metadata uses absolute production URLs; otherwise production defaults to the deployed Addis Eats origin and development to localhost.
+Dish detail social cards use each record's `image_url`; the site-wide card uses the food photo at `public/images/hero.png`. Metadata, sitemap, and robots URLs use `https://addis-eats-next-psi.vercel.app` as the production origin unless `NEXT_PUBLIC_SITE_URL` or the Vercel production URL is configured.
 
 ---
 

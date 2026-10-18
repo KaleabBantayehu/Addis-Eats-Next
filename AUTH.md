@@ -30,7 +30,7 @@ To enable Google sign-in, enable the Google provider in Supabase Auth and regist
 | Order details, APIs, and tracking | Verified identity and order ownership; staff/admin access only where explicitly allowed |
 | `placeOrder`, cancellation, status updates, favorites actions | Each action re-checks identity, owner, role, and/or valid status transition at mutation time |
 
-Use `auth.uid()` in Supabase RLS policies for database ownership checks. The server client carries the signed-in Supabase Auth cookie, so Postgres receives the authenticated JWT. The old custom `session` HMAC cookie and fixture profiles are no longer used.
+Use `auth.uid()` in Supabase RLS policies for database ownership checks. The server client carries the signed-in Supabase Auth cookie, so Postgres receives the authenticated JWT. The legacy HMAC session flow and its profile records are no longer used.
 
 Apply `supabase/migrations/202610160002_favorites_orders.sql` after the profile security migration. It creates the favorites and order tables, enables owner/staff RLS for reads, and exposes authenticated RPCs that validate ownership and order status transitions. `place_order` reads current available dish prices inside one database transaction; clients cannot insert or alter orders or order items directly.
 

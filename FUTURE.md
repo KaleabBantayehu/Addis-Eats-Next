@@ -1,6 +1,6 @@
 # Addis Eats — Future Roadmap & Scoping Decisions (MoSCoW)
 
-This document records the product scoping decisions for the Addis Eats Next.js application, adhering to the MoSCoW prioritization framework and the capstone discipline: *start no new features past the halfway point*. Unbuilt ideas and lower-priority capabilities were deliberately cut and scheduled for post-capstone milestones rather than omitted through oversight.
+This document records the product scoping decisions for the deployed Addis Eats application using the MoSCoW prioritization framework. Unbuilt ideas and lower-priority capabilities are scheduled for future milestones.
 
 ---
 
@@ -31,25 +31,25 @@ The following features were evaluated and deliberately cut to maintain architect
 ### 1. Additional Database Capabilities
 - **Current State**: Favorites and orders persist in Supabase; order pricing is validated against the database catalog.
 - **Deferred Feature**: Add payment processing and operational reporting on top of the persistent order model.
-- **Rationale for Cutting**: Payment gateways require merchant credentials, TLS webhook callbacks, and sandbox testing keys that cannot be safely exposed in a demo classroom deployment.
+- **Rationale for Deferral**: Payment gateways require merchant credentials, TLS webhook callbacks, and sandbox testing before they can be enabled.
 - **Target Milestone**: v1.2.0
 
 ### 2. Live Payment Gateway Integration (TeleBirr & Chapa)
 - **Current State**: Orders are placed with simulated TeleBirr mobile numbers.
 - **Deferred Feature**: Direct API integration with Ethio Telecom TeleBirr SuperApp API and Chapa payment checkout webhooks.
-- **Rationale for Cutting**: Production payment gateways require merchant credentials, TLS webhook callbacks, and sandbox testing keys that cannot be safely exposed in a demo classroom deployment.
+- **Rationale for Deferral**: Production payment gateways require merchant credentials, TLS webhook callbacks, and sandbox testing before integration.
 - **Target Milestone**: v1.2.0
 
 ### 3. Native Driver GPS Telemetry
 - **Current State**: Courier coordinates are simulated server-side along route vectors via Server-Sent Events.
 - **Deferred Feature**: Dedicated driver PWA with `navigator.geolocation.watchPosition` streaming live latitude/longitude to an event broker.
-- **Rationale for Cutting**: Scope exceeds single-user frontend capstone; simulated SSE accurately exercises the Leaflet map bounds and client streaming consumer.
+- **Rationale for Deferral**: A driver application and event broker are additional services beyond the current simulated SSE tracking workflow.
 - **Target Milestone**: v1.3.0
 
 ### 4. Web Push Notifications
 - **Current State**: Order status updates stream via open SSE connections in the active browser tab.
 - **Deferred Feature**: Browser Web Push API (Service Worker + VAPID keys) notifying customers when their food is preparing or delivered even if the browser tab is closed.
-- **Rationale for Cutting**: Service worker registration and offline caching lifecycle add deployment complexity with minimal benefit for desktop/demo evaluation.
+- **Rationale for Deferral**: Service worker registration and offline caching add operational complexity; current status updates are delivered while the browser tab is active.
 - **Target Milestone**: v1.4.0
 
 ### 5. Multi-Language Localization (Amharic & English)
@@ -59,7 +59,7 @@ The following features were evaluated and deliberately cut to maintain architect
 - **Target Milestone**: v1.5.0
 
 ### 6. Customer Dish Reviews & Photo Uploads
-- **Current State**: Curated dish reviews and ratings embedded in static catalog fixtures.
+- **Current State**: Customer-submitted reviews and photo uploads are not currently supported.
 - **Deferred Feature**: User-submitted reviews with image uploads stored on AWS S3 / Cloudflare R2 and moderation workflow in the kitchen dashboard.
 - **Rationale for Cutting**: Requires authenticated multipart upload pipelines, image transformation, and anti-abuse moderation.
 - **Target Milestone**: v2.0.0
